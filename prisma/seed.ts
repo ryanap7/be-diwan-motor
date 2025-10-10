@@ -23,7 +23,7 @@ async function main() {
     // Create Users
     const hashedPassword = await bcrypt.hash('password123', 10);
 
-    const admin = await prisma.user.create({
+    await prisma.user.create({
         data: {
             email: 'admin@bengkel.com',
             name: 'Admin Bengkel',
@@ -33,7 +33,7 @@ async function main() {
         },
     });
 
-    const manager = await prisma.user.create({
+    await prisma.user.create({
         data: {
             email: 'manager@bengkel.com',
             name: 'Manager Bengkel',
@@ -43,7 +43,7 @@ async function main() {
         },
     });
 
-    const staff = await prisma.user.create({
+    await prisma.user.create({
         data: {
             email: 'staff@bengkel.com',
             name: 'Staff Bengkel',
@@ -90,7 +90,7 @@ async function main() {
     console.log('✅ Categories created');
 
     // Create Suppliers
-    const suppliers = await Promise.all([
+    await Promise.all([
         prisma.supplier.create({
             data: {
                 code: 'SUP-001',
@@ -122,7 +122,7 @@ async function main() {
     console.log('✅ Suppliers created');
 
     // Create Products
-    const products = await Promise.all([
+    await Promise.all([
         prisma.product.create({
             data: {
                 sku: 'OLI-001',
@@ -194,7 +194,7 @@ async function main() {
     console.log('✅ Products created');
 
     // Create Customers
-    const customers = await Promise.all([
+    await Promise.all([
         prisma.customer.create({
             data: {
                 code: 'CUST-001',
