@@ -62,7 +62,7 @@ cp .env.example .env
 
 ```bash
 # Create PostgreSQL database
-createdb db_inventory
+createdb db_hdmotopart
 
 # Generate Prisma Client
 npm run prisma:generate
@@ -103,7 +103,7 @@ Copy `.env.example` ke `.env` dan sesuaikan dengan konfigurasi Anda:
 ```env
 NODE_ENV=development
 PORT=8000
-DATABASE_URL="postgresql://user:password@localhost:5432/db_inventory"
+DATABASE_URL="postgresql://user:password@localhost:5432/db_hdmotopart"
 JWT_SECRET=your-secret-key
 JWT_EXPIRES_IN=7d
 ```
