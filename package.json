@@ -6,14 +6,13 @@
     "scripts": {
         "dev": "tsx watch src/server.ts",
         "build": "tsc",
-        "start": "node dist/server.js",
+        "start": "node -r tsconfig-paths/register dist/server.js",
         "prisma:generate": "prisma generate",
         "prisma:migrate": "prisma migrate dev",
         "prisma:migrate:deploy": "prisma migrate deploy",
         "prisma:studio": "prisma studio",
         "prisma:seed": "tsx prisma/seed.ts",
         "prisma:reset": "prisma migrate reset",
-        "seed": "tsx prisma/seed.ts",
         "lint": "eslint . --ext .ts",
         "format": "prettier --write \"src/**/*.ts\""
     },
@@ -32,6 +31,7 @@
         "express-rate-limit": "^8.1.0",
         "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.2",
+        "tsconfig-paths": "^4.2.0",
         "winston": "^3.18.3",
         "zod": "^4.1.12"
     },
