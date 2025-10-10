@@ -16,9 +16,9 @@
         "@validators": "dist/validators"
     },
     "scripts": {
-        "dev": "tsx watch src/server.ts",
+        "dev": "NODE_ENV=development tsx watch --tsconfig tsconfig.json -r tsconfig-paths/register src/server.ts",
         "build": "tsc && tsc-alias",
-        "start": "node -r module-alias/register dist/server.js",
+        "start": "NODE_ENV=production node -r module-alias/register dist/server.js",
         "prisma:generate": "prisma generate",
         "prisma:migrate": "prisma migrate dev",
         "prisma:migrate:deploy": "prisma migrate deploy",
