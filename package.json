@@ -3,10 +3,22 @@
     "version": "1.0.0",
     "description": "REST API for HD MOTOPART Management System",
     "main": "dist/server.js",
+    "_moduleAliases": {
+        "@": "dist",
+        "@config": "dist/config",
+        "@controllers": "dist/controllers",
+        "@services": "dist/services",
+        "@repositories": "dist/repositories",
+        "@middlewares": "dist/middlewares",
+        "@routes": "dist/routes",
+        "@types": "dist/types",
+        "@utils": "dist/utils",
+        "@validators": "dist/validators"
+    },
     "scripts": {
         "dev": "tsx watch src/server.ts",
-        "build": "tsc",
-        "start": "node -r tsconfig-paths/register dist/server.js",
+        "build": "tsc && tsc-alias",
+        "start": "node -r module-alias/register dist/server.js",
         "prisma:generate": "prisma generate",
         "prisma:migrate": "prisma migrate dev",
         "prisma:migrate:deploy": "prisma migrate deploy",
@@ -17,7 +29,12 @@
         "format": "prettier --write \"src/**/*.ts\""
     },
     "keywords": [
-        "HD MOTOPART"
+        "express",
+        "typescript",
+        "prisma",
+        "postgresql",
+        "inventory",
+        "bengkel"
     ],
     "author": "Ryan Aprianto",
     "license": "MIT",
@@ -31,6 +48,7 @@
         "express-rate-limit": "^8.1.0",
         "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.2",
+        "module-alias": "^2.2.3",
         "tsconfig-paths": "^4.2.0",
         "winston": "^3.18.3",
         "zod": "^4.1.12"
@@ -40,7 +58,6 @@
         "@types/compression": "^1.8.1",
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.3",
-        "@types/json-schema": "^7.0.15",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/node": "^24.7.1",
         "@typescript-eslint/eslint-plugin": "^8.46.0",
@@ -48,12 +65,16 @@
         "eslint": "^9.37.0",
         "prettier": "^3.6.2",
         "prisma": "^6.17.1",
+        "tsc-alias": "^1.8.8",
         "tsx": "^4.20.6",
         "typescript": "^5.9.3"
     },
     "engines": {
         "node": ">=18.0.0",
         "npm": ">=9.0.0"
+    },
+    "prisma": {
+        "seed": "tsx prisma/seed.ts"
     },
     "repository": {
         "type": "git",
