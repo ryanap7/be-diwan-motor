@@ -19,7 +19,6 @@ interface ErrorResponse {
         timestamp: string;
         requestId?: string;
     };
-    stack?: string;
 }
 
 interface PaginationMeta {
@@ -91,8 +90,7 @@ export class ResponseHandler {
         message: string,
         statusCode = 500,
         code?: string,
-        errors?: Record<string, string[]>,
-        stack?: string
+        errors?: Record<string, string[]>
     ): Response<ErrorResponse> {
         const response: ErrorResponse = {
             success: false,
@@ -104,9 +102,6 @@ export class ResponseHandler {
 
         if (code) response.code = code;
         if (errors) response.errors = errors;
-        if (stack && process.env.NODE_ENV === 'development') {
-            response.stack = stack;
-        }
 
         return res.status(statusCode).json(response);
     }

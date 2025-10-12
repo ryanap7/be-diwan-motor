@@ -1,230 +1,318 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole, BranchStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+async function hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+}
+
 async function main() {
-    console.log('🌱 Start seeding...');
+    console.log('🌱 Starting seed...');
 
     // Clean database
-    await prisma.salesOrderItem.deleteMany();
-    await prisma.salesOrder.deleteMany();
-    await prisma.customer.deleteMany();
-    await prisma.stockMovement.deleteMany();
-    await prisma.purchaseOrderItem.deleteMany();
-    await prisma.purchaseOrder.deleteMany();
-    await prisma.product.deleteMany();
-    await prisma.category.deleteMany();
-    await prisma.supplier.deleteMany();
+    console.log('🧹 Cleaning database...');
+    await prisma.refreshToken.deleteMany();
+    await prisma.branch.deleteMany();
     await prisma.user.deleteMany();
 
     console.log('✅ Database cleaned');
 
-    // Create Users
-    const hashedPassword = await bcrypt.hash('password123', 10);
-
-    await prisma.user.create({
+    // ==========================================
+    // 1. CREATE ADMIN USER
+    // ==========================================
+    console.log('👤 Creating admin user...');
+    const admin = await prisma.user.create({
         data: {
-            email: 'admin@bengkel.com',
-            name: 'Admin Bengkel',
-            password: hashedPassword,
+            username: 'admin',
+            password: await hashPassword('Admin123!'),
+            email: 'admin@company.com',
+            fullName: 'System Administrator',
             phone: '081234567890',
-            role: 'ADMIN',
+            role: UserRole.ADMIN,
+            isActive: true,
         },
     });
+    console.log(`✅ Admin created: ${admin.email}`);
 
-    await prisma.user.create({
-        data: {
-            email: 'manager@bengkel.com',
-            name: 'Manager Bengkel',
-            password: hashedPassword,
-            phone: '081234567891',
-            role: 'MANAGER',
-        },
-    });
-
-    await prisma.user.create({
-        data: {
-            email: 'staff@bengkel.com',
-            name: 'Staff Bengkel',
-            password: hashedPassword,
-            phone: '081234567892',
-            role: 'STAFF',
-        },
-    });
-
-    console.log('✅ Users created');
-
-    // Create Categories
-    const categories = await Promise.all([
-        prisma.category.create({
+    // ==========================================
+    // 2. CREATE BRANCH MANAGERS
+    // ==========================================
+    console.log('👔 Creating branch managers...');
+    const managers = await Promise.all([
+        prisma.user.create({
             data: {
-                name: 'Oli & Pelumas',
-                slug: 'oli-pelumas',
-                description: 'Oli mesin, oli transmisi, dan pelumas lainnya',
+                username: 'manager_jakarta',
+                password: await hashPassword('Manager123!'),
+                email: 'manager.jakarta@company.com',
+                fullName: 'Budi Santoso',
+                phone: '081234567891',
+                role: UserRole.BRANCH_MANAGER,
+                isActive: true,
             },
         }),
-        prisma.category.create({
+        prisma.user.create({
             data: {
-                name: 'Spare Part Mesin',
-                slug: 'spare-part-mesin',
-                description: 'Komponen mesin kendaraan',
+                username: 'manager_bandung',
+                password: await hashPassword('Manager123!'),
+                email: 'manager.bandung@company.com',
+                fullName: 'Siti Rahayu',
+                phone: '081234567892',
+                role: UserRole.BRANCH_MANAGER,
+                isActive: true,
             },
         }),
-        prisma.category.create({
+        prisma.user.create({
             data: {
-                name: 'Ban & Velg',
-                slug: 'ban-velg',
-                description: 'Ban, velg, dan aksesoris roda',
-            },
-        }),
-        prisma.category.create({
-            data: {
-                name: 'Aki & Baterai',
-                slug: 'aki-baterai',
-                description: 'Aki, baterai, dan komponen kelistrikan',
-            },
-        }),
-    ]);
-
-    console.log('✅ Categories created');
-
-    // Create Suppliers
-    await Promise.all([
-        prisma.supplier.create({
-            data: {
-                code: 'SUP-001',
-                name: 'PT Astra Otoparts',
-                email: 'sales@astra-otoparts.com',
-                phone: '021-12345678',
-                address: 'Jl. Raya Jakarta No. 123',
-                city: 'Jakarta',
-                province: 'DKI Jakarta',
-                postalCode: '12345',
-                contactPerson: 'Budi Santoso',
-            },
-        }),
-        prisma.supplier.create({
-            data: {
-                code: 'SUP-002',
-                name: 'CV Maju Jaya Motor',
-                email: 'info@majujaya.com',
-                phone: '022-87654321',
-                address: 'Jl. Industri No. 45',
-                city: 'Bandung',
-                province: 'Jawa Barat',
-                postalCode: '40123',
-                contactPerson: 'Andi Wijaya',
-            },
-        }),
-    ]);
-
-    console.log('✅ Suppliers created');
-
-    // Create Products
-    await Promise.all([
-        prisma.product.create({
-            data: {
-                sku: 'OLI-001',
-                name: 'Oli Mesin Shell Helix HX7 10W-40',
-                slug: 'oli-mesin-shell-helix-hx7-10w-40',
-                description: 'Oli mesin sintetik untuk kendaraan bensin',
-                categoryId: categories[0].id,
-                costPrice: 85000,
-                sellingPrice: 120000,
-                currentStock: 50,
-                minimumStock: 10,
-                maximumStock: 100,
-                unit: 'liter',
-                brand: 'Shell',
-                location: 'Rak A-1',
-            },
-        }),
-        prisma.product.create({
-            data: {
-                sku: 'SPM-001',
-                name: 'Filter Oli Toyota Avanza',
-                slug: 'filter-oli-toyota-avanza',
-                description: 'Filter oli original untuk Toyota Avanza',
-                categoryId: categories[1].id,
-                costPrice: 35000,
-                sellingPrice: 50000,
-                currentStock: 30,
-                minimumStock: 5,
-                unit: 'pcs',
-                brand: 'Toyota',
-                model: 'Avanza',
-                location: 'Rak B-2',
-            },
-        }),
-        prisma.product.create({
-            data: {
-                sku: 'BAN-001',
-                name: 'Ban Bridgestone Turanza 185/65 R15',
-                slug: 'ban-bridgestone-turanza-185-65-r15',
-                description: 'Ban mobil ukuran 185/65 R15',
-                categoryId: categories[2].id,
-                costPrice: 650000,
-                sellingPrice: 850000,
-                currentStock: 20,
-                minimumStock: 4,
-                unit: 'pcs',
-                brand: 'Bridgestone',
-                location: 'Gudang Ban',
-            },
-        }),
-        prisma.product.create({
-            data: {
-                sku: 'AKI-001',
-                name: 'Aki GS Astra NS60L 12V 45Ah',
-                slug: 'aki-gs-astra-ns60l-12v-45ah',
-                description: 'Aki basah untuk mobil',
-                categoryId: categories[3].id,
-                costPrice: 550000,
-                sellingPrice: 750000,
-                currentStock: 15,
-                minimumStock: 3,
-                unit: 'pcs',
-                brand: 'GS Astra',
-                location: 'Rak C-1',
-            },
-        }),
-    ]);
-
-    console.log('✅ Products created');
-
-    // Create Customers
-    await Promise.all([
-        prisma.customer.create({
-            data: {
-                code: 'CUST-001',
-                name: 'John Doe',
-                email: 'john@example.com',
+                username: 'manager_surabaya',
+                password: await hashPassword('Manager123!'),
+                email: 'manager.surabaya@company.com',
+                fullName: 'Ahmad Wijaya',
                 phone: '081234567893',
-                address: 'Jl. Merdeka No. 10',
-                city: 'Jakarta',
-                province: 'DKI Jakarta',
-            },
-        }),
-        prisma.customer.create({
-            data: {
-                code: 'CUST-002',
-                name: 'Jane Smith',
-                phone: '081234567894',
-                address: 'Jl. Sudirman No. 20',
-                city: 'Bandung',
-                province: 'Jawa Barat',
+                role: UserRole.BRANCH_MANAGER,
+                isActive: true,
             },
         }),
     ]);
+    console.log(`✅ Created ${managers.length} managers`);
 
-    console.log('✅ Customers created');
+    // ==========================================
+    // 3. CREATE CASHIERS
+    // ==========================================
+    console.log('💰 Creating cashiers...');
+    const cashiers = await Promise.all([
+        prisma.user.create({
+            data: {
+                username: 'cashier_jakarta',
+                password: await hashPassword('Cashier123!'),
+                email: 'cashier.jakarta@company.com',
+                fullName: 'Dewi Lestari',
+                phone: '081234567894',
+                role: UserRole.CASHIER,
+                isActive: true,
+            },
+        }),
+        prisma.user.create({
+            data: {
+                username: 'cashier_bandung',
+                password: await hashPassword('Cashier123!'),
+                email: 'cashier.bandung@company.com',
+                fullName: 'Rina Marlina',
+                phone: '081234567895',
+                role: UserRole.CASHIER,
+                isActive: true,
+            },
+        }),
+        prisma.user.create({
+            data: {
+                username: 'cashier_surabaya',
+                password: await hashPassword('Cashier123!'),
+                email: 'cashier.surabaya@company.com',
+                fullName: 'Andi Prasetyo',
+                phone: '081234567896',
+                role: UserRole.CASHIER,
+                isActive: true,
+            },
+        }),
+    ]);
+    console.log(`✅ Created ${cashiers.length} cashiers`);
 
-    console.log('🎉 Seeding completed!');
-    console.log('\n📋 Default Users:');
-    console.log('Admin: admin@bengkel.com / password123');
-    console.log('Manager: manager@bengkel.com / password123');
-    console.log('Staff: staff@bengkel.com / password123');
+    // ==========================================
+    // 4. CREATE BRANCHES WITH FULL FLOW
+    // ==========================================
+    console.log('🏢 Creating branches...');
+
+    // Sample operating hours
+    const defaultOperatingHours = {
+        monday: { open: '08:00', close: '17:00', closed: false },
+        tuesday: { open: '08:00', close: '17:00', closed: false },
+        wednesday: { open: '08:00', close: '17:00', closed: false },
+        thursday: { open: '08:00', close: '17:00', closed: false },
+        friday: { open: '08:00', close: '17:00', closed: false },
+        saturday: { open: '09:00', close: '15:00', closed: false },
+        sunday: { open: '00:00', close: '00:00', closed: true },
+    };
+
+    // BRANCH 1: Jakarta (ACTIVE - Complete)
+    const branchJakarta = await prisma.branch.create({
+        data: {
+            code: 'JKT-001',
+            name: 'Cabang Jakarta Pusat',
+            address: 'Jl. Sudirman No. 123, Jakarta Pusat',
+            city: 'Jakarta',
+            province: 'DKI Jakarta',
+            postalCode: '10110',
+            phone: '0212345678',
+            email: 'jakarta@company.com',
+            operatingHours: defaultOperatingHours,
+            status: BranchStatus.ACTIVE,
+            isActive: true,
+            managerId: managers[0].id,
+            cashierId: cashiers[0].id,
+            activatedAt: new Date(),
+            notes: 'Cabang utama di Jakarta',
+        },
+    });
+
+    // Update users to be assigned to Jakarta branch
+    await prisma.user.update({
+        where: { id: managers[0].id },
+        data: { branchId: branchJakarta.id },
+    });
+    await prisma.user.update({
+        where: { id: cashiers[0].id },
+        data: { branchId: branchJakarta.id },
+    });
+
+    console.log(`✅ Branch Jakarta created (ACTIVE)`);
+
+    // BRANCH 2: Bandung (ACTIVE - Complete)
+    const branchBandung = await prisma.branch.create({
+        data: {
+            code: 'BDG-001',
+            name: 'Cabang Bandung',
+            address: 'Jl. Dago No. 456, Bandung',
+            city: 'Bandung',
+            province: 'Jawa Barat',
+            postalCode: '40135',
+            phone: '0227654321',
+            email: 'bandung@company.com',
+            operatingHours: defaultOperatingHours,
+            status: BranchStatus.ACTIVE,
+            isActive: true,
+            managerId: managers[1].id,
+            cashierId: cashiers[1].id,
+            activatedAt: new Date(),
+            notes: 'Cabang di kota kembang',
+        },
+    });
+
+    await prisma.user.update({
+        where: { id: managers[1].id },
+        data: { branchId: branchBandung.id },
+    });
+    await prisma.user.update({
+        where: { id: cashiers[1].id },
+        data: { branchId: branchBandung.id },
+    });
+
+    console.log(`✅ Branch Bandung created (ACTIVE)`);
+
+    // BRANCH 3: Surabaya (PENDING - Has manager and cashier but not activated)
+    const branchSurabaya = await prisma.branch.create({
+        data: {
+            code: 'SBY-001',
+            name: 'Cabang Surabaya',
+            address: 'Jl. Pemuda No. 789, Surabaya',
+            city: 'Surabaya',
+            province: 'Jawa Timur',
+            postalCode: '60271',
+            phone: '0319876543',
+            email: 'surabaya@company.com',
+            operatingHours: defaultOperatingHours,
+            status: BranchStatus.PENDING,
+            isActive: false,
+            managerId: managers[2].id,
+            cashierId: cashiers[2].id,
+            notes: 'Menunggu aktivasi dari pusat',
+        },
+    });
+
+    await prisma.user.update({
+        where: { id: managers[2].id },
+        data: { branchId: branchSurabaya.id },
+    });
+    await prisma.user.update({
+        where: { id: cashiers[2].id },
+        data: { branchId: branchSurabaya.id },
+    });
+
+    console.log(`✅ Branch Surabaya created (PENDING)`);
+
+    // BRANCH 4: Yogyakarta (DRAFT - No manager and cashier)
+    await prisma.branch.create({
+        data: {
+            code: 'YGY-001',
+            name: 'Cabang Yogyakarta',
+            address: 'Jl. Malioboro No. 100, Yogyakarta',
+            city: 'Yogyakarta',
+            province: 'DI Yogyakarta',
+            postalCode: '55213',
+            phone: '0274123456',
+            email: 'yogyakarta@company.com',
+            operatingHours: defaultOperatingHours,
+            status: BranchStatus.DRAFT,
+            isActive: false,
+            notes: 'Cabang baru, belum lengkap',
+        },
+    });
+
+    console.log(`✅ Branch Yogyakarta created (DRAFT)`);
+
+    // BRANCH 5: Semarang (INACTIVE - Previously active but deactivated)
+    await prisma.branch.create({
+        data: {
+            code: 'SMG-001',
+            name: 'Cabang Semarang',
+            address: 'Jl. Pandanaran No. 88, Semarang',
+            city: 'Semarang',
+            province: 'Jawa Tengah',
+            postalCode: '50134',
+            phone: '0248765432',
+            email: 'semarang@company.com',
+            operatingHours: defaultOperatingHours,
+            status: BranchStatus.INACTIVE,
+            isActive: false,
+            activatedAt: new Date('2024-01-01'),
+            deactivatedAt: new Date('2024-06-01'),
+            notes: 'Dinonaktifkan untuk renovasi',
+        },
+    });
+
+    console.log(`✅ Branch Semarang created (INACTIVE)`);
+
+    // ==========================================
+    // 5. SUMMARY
+    // ==========================================
+    console.log('\n📊 Seeding Summary:');
+    console.log('='.repeat(50));
+    console.log(`👤 Users created: ${1 + managers.length + cashiers.length}`);
+    console.log(`   - Admin: 1`);
+    console.log(`   - Managers: ${managers.length}`);
+    console.log(`   - Cashiers: ${cashiers.length}`);
+    console.log(`\n🏢 Branches created: 5`);
+    console.log(`   - ACTIVE: 2 (Jakarta, Bandung)`);
+    console.log(`   - PENDING: 1 (Surabaya)`);
+    console.log(`   - DRAFT: 1 (Yogyakarta)`);
+    console.log(`   - INACTIVE: 1 (Semarang)`);
+    console.log('\n🔑 Login Credentials:');
+    console.log('='.repeat(50));
+    console.log('Admin:');
+    console.log('  Username: admin');
+    console.log('  Password: Admin123!');
+    console.log('  Email: admin@company.com');
+    console.log('\nBranch Managers:');
+    console.log(
+        '  Jakarta  - Username: manager_jakarta  | Password: Manager123!'
+    );
+    console.log(
+        '  Bandung  - Username: manager_bandung  | Password: Manager123!'
+    );
+    console.log(
+        '  Surabaya - Username: manager_surabaya | Password: Manager123!'
+    );
+    console.log('\nCashiers:');
+    console.log(
+        '  Jakarta  - Username: cashier_jakarta  | Password: Cashier123!'
+    );
+    console.log(
+        '  Bandung  - Username: cashier_bandung  | Password: Cashier123!'
+    );
+    console.log(
+        '  Surabaya - Username: cashier_surabaya | Password: Cashier123!'
+    );
+    console.log('='.repeat(50));
+    console.log('\n✅ Seeding completed successfully!\n');
 }
 
 main()

@@ -20,6 +20,7 @@ export const comparePassword = async (
 // JWT Token Payload Interface
 export interface JWTPayload {
     userId: string;
+    username: string;
     email: string;
     role: string;
 }

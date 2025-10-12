@@ -6,6 +6,8 @@ import { config } from './config/env';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { generalLimiter } from './middlewares/rateLimiter';
 import logger from './config/logger';
+import cookieParser from 'cookie-parser';
+import routes from '@/routes';
 
 // Create Express app
 const app: Application = express();
@@ -23,6 +25,9 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Cookie parser
+app.use(cookieParser());
+
 // Compression middleware
 app.use(compression());
 
@@ -38,24 +43,8 @@ app.use((req: Request, _res: Response, next) => {
     next();
 });
 
-// Health check endpoint
-app.get('/health', (_req: Request, res: Response) => {
-    res.status(200).json({
-        success: true,
-        message: 'Server is running',
-        data: {
-            service: config.app.name,
-            version: config.app.apiVersion,
-            environment: config.app.env,
-            timestamp: new Date().toISOString(),
-        },
-    });
-});
-
-// API routes
-// TODO: Import and use routes here
-// import routes from './routes';
-// app.use(`/api/${config.app.apiVersion}`, routes);
+// API Routes
+app.use('/api', routes);
 
 // 404 handler (must be after all routes)
 app.use(notFoundHandler);

@@ -13,7 +13,6 @@ export const errorHandler = (
     // Log error
     logger.error('Error occurred:', {
         message: err.message,
-        stack: err.stack,
         url: req.url,
         method: req.method,
         ip: req.ip,
@@ -49,8 +48,7 @@ export const errorHandler = (
             err.message,
             err.statusCode,
             err.code,
-            undefined,
-            err.stack
+            undefined
         );
     }
 
@@ -62,8 +60,7 @@ export const errorHandler = (
             prismaError.message,
             prismaError.statusCode,
             prismaError.code,
-            undefined,
-            prismaError.stack
+            undefined
         );
     }
 
@@ -73,8 +70,7 @@ export const errorHandler = (
         'Internal Server Error',
         500,
         'INTERNAL_ERROR',
-        undefined,
-        process.env.NODE_ENV === 'development' ? err.stack : undefined
+        undefined
     );
 };
 
