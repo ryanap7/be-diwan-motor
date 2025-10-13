@@ -32,7 +32,7 @@ app.use(cookieParser());
 app.use(compression());
 
 // Rate limiting
-app.use(generalLimiter);
+// app.use(generalLimiter);
 
 // Request logging middleware
 app.use((req: Request, _res: Response, next) => {

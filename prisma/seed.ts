@@ -19,7 +19,7 @@ async function main() {
     console.log('✅ Database cleaned');
 
     // ==========================================
-    // 1. CREATE ADMIN USER
+    // CREATE ADMIN USER
     // ==========================================
     console.log('👤 Creating admin user...');
     const admin = await prisma.user.create({
@@ -36,7 +36,7 @@ async function main() {
     console.log(`✅ Admin created: ${admin.email}`);
 
     // ==========================================
-    // 2. CREATE BRANCH MANAGERS
+    // CREATE BRANCH MANAGERS
     // ==========================================
     console.log('👔 Creating branch managers...');
     const managers = await Promise.all([
@@ -77,7 +77,7 @@ async function main() {
     console.log(`✅ Created ${managers.length} managers`);
 
     // ==========================================
-    // 3. CREATE CASHIERS
+    // CREATE CASHIERS
     // ==========================================
     console.log('💰 Creating cashiers...');
     const cashiers = await Promise.all([
@@ -118,7 +118,7 @@ async function main() {
     console.log(`✅ Created ${cashiers.length} cashiers`);
 
     // ==========================================
-    // 4. CREATE BRANCHES WITH FULL FLOW
+    // CREATE BRANCHES WITH FULL FLOW
     // ==========================================
     console.log('🏢 Creating branches...');
 
@@ -271,8 +271,145 @@ async function main() {
 
     console.log(`✅ Branch Semarang created (INACTIVE)`);
 
+    // Create Categories with nested structure
+    console.log('📦 Creating categories...');
+
+    // Root Categories
+    await prisma.category.create({
+        data: {
+            name: 'Ban & Velg',
+            slug: 'ban-velg',
+            description: 'Ban motor dan velg racing',
+            sortOrder: 1,
+            isActive: true,
+        },
+    });
+
+    const oliPelumas = await prisma.category.create({
+        data: {
+            name: 'Oli & Pelumas',
+            slug: 'oli-pelumas',
+            description: 'Oli mesin, gardan dan pelumas',
+            sortOrder: 2,
+            isActive: true,
+        },
+    });
+
+    await prisma.category.create({
+        data: {
+            name: 'Sistem Rem',
+            slug: 'sistem-rem',
+            description: 'Kompas rem, cakram, dan kampas',
+            sortOrder: 3,
+            isActive: true,
+        },
+    });
+
+    const kelistrikan = await prisma.category.create({
+        data: {
+            name: 'Kelistrikan',
+            slug: 'kelistrikan',
+            description: 'Aki, busi, CDI, lampu, klakson',
+            sortOrder: 4,
+            isActive: true,
+        },
+    });
+
+    await prisma.category.create({
+        data: {
+            name: 'Filter',
+            slug: 'filter',
+            description: 'Filter udara, oli, dan bensin',
+            sortOrder: 5,
+            isActive: true,
+        },
+    });
+
+    await prisma.category.create({
+        data: {
+            name: 'Sistem Transmisi',
+            slug: 'sistem-transmisi',
+            description: 'Rantai, gear, kopling',
+            sortOrder: 6,
+            isActive: true,
+        },
+    });
+
+    await prisma.category.create({
+        data: {
+            name: 'Body & Aksesoris',
+            slug: 'body-aksesoris',
+            description: 'Spion, jok, knalpot, windshield',
+            sortOrder: 7,
+            isActive: true,
+        },
+    });
+
+    // Sub Categories - Oli & Pelumas
+    await prisma.category.createMany({
+        data: [
+            {
+                name: 'Oli Mesin',
+                slug: 'oli-mesin',
+                description: 'Oli untuk mesin motor 4-tak dan 2-tak',
+                parentId: oliPelumas.id,
+                sortOrder: 1,
+            },
+            {
+                name: 'Oli Gardan',
+                slug: 'oli-gardan',
+                description: 'Oli untuk gardan motor matic',
+                parentId: oliPelumas.id,
+                sortOrder: 2,
+            },
+            {
+                name: 'Pelumas',
+                slug: 'pelumas',
+                description: 'Grease dan pelumas rantai',
+                parentId: oliPelumas.id,
+                sortOrder: 3,
+            },
+        ],
+    });
+
+    // Sub Categories - Kelistrikan
+    await prisma.category.createMany({
+        data: [
+            {
+                name: 'Aki',
+                slug: 'aki',
+                description: 'Baterai motor kering dan basah',
+                parentId: kelistrikan.id,
+                sortOrder: 1,
+            },
+            {
+                name: 'Busi',
+                slug: 'busi',
+                description: 'Busi standar dan racing',
+                parentId: kelistrikan.id,
+                sortOrder: 2,
+            },
+            {
+                name: 'Lampu',
+                slug: 'lampu',
+                description: 'Lampu depan, belakang, sein',
+                parentId: kelistrikan.id,
+                sortOrder: 3,
+            },
+            {
+                name: 'CDI',
+                slug: 'cdi',
+                description: 'CDI standar dan racing',
+                parentId: kelistrikan.id,
+                sortOrder: 4,
+            },
+        ],
+    });
+
+    console.log('✅ Categories created successfully');
+
     // ==========================================
-    // 5. SUMMARY
+    // SUMMARY
     // ==========================================
     console.log('\n📊 Seeding Summary:');
     console.log('='.repeat(50));

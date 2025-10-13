@@ -11,23 +11,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enum untuk Role
+// ============================================
+// ENUMS
+// ============================================
+
 enum UserRole {
   ADMIN
   CASHIER
   BRANCH_MANAGER
 }
 
-// Enum untuk Branch Status
 enum BranchStatus {
-  DRAFT           // Belum lengkap (belum ada manager & cashier)
-  PENDING         // Sudah lengkap, menunggu aktivasi
-  ACTIVE          // Sudah aktif dan operasional
-  INACTIVE        // Dinonaktifkan sementara
-  CLOSED          // Ditutup permanen
+  DRAFT
+  PENDING
+  ACTIVE
+  INACTIVE
+  CLOSED
 }
 
-// Model Branch (Cabang)
+// ============================================
+// BRANCH MANAGEMENT
+// ============================================
+
 model Branch {
   id              String       @id @default(uuid())
   code            String       @unique
@@ -39,29 +44,23 @@ model Branch {
   phone           String
   email           String
   
-  // Jam Operasional (stored as JSON or separate fields)
-  operatingHours  Json?        // {monday: {open: "08:00", close: "17:00"}, ...}
+  operatingHours  Json?
   
-  // Status Management
   status          BranchStatus @default(DRAFT)
   isActive        Boolean      @default(false)
   
-  // Assignment tracking
-  managerId       String?      @unique // One branch = one manager
-  cashierId       String?      @unique // One branch = one cashier (❗ diperbaiki di sini)
+  managerId       String?      @unique
+  cashierId       String?      @unique
   
-  // Activation tracking
   activatedAt     DateTime?
   deactivatedAt   DateTime?
   closedAt        DateTime?
   
-  // Metadata
   notes           String?      @db.Text
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-  deletedAt       DateTime?    // Soft delete
+  deletedAt       DateTime?
 
-  // Relations
   users           User[]
   manager         User?        @relation("BranchManager", fields: [managerId], references: [id], onDelete: SetNull)
   cashier         User?        @relation("BranchCashier", fields: [cashierId], references: [id], onDelete: SetNull)
@@ -78,7 +77,10 @@ model Branch {
   @@map("branches")
 }
 
-// Model User
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
 model User {
   id        String   @id @default(uuid())
   username  String   @unique
@@ -90,13 +92,11 @@ model User {
   isActive  Boolean  @default(true)
   branchId  String?
   
-  // Metadata
   lastLogin DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete
+  deletedAt DateTime?
 
-  // Relations
   branch            Branch?            @relation(fields: [branchId], references: [id], onDelete: Restrict)
   managedBranch     Branch?            @relation("BranchManager")
   primaryCashierAt  Branch?            @relation("BranchCashier")
@@ -112,7 +112,6 @@ model User {
   @@map("users")
 }
 
-// Model untuk Refresh Token (JWT)
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique @db.Text
@@ -126,4 +125,130 @@ model RefreshToken {
   @@index([token])
   @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+// ============================================
+// PRODUCT MANAGEMENT - CATEGORY
+// ============================================
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  
+  // Nested Category (Self-referencing)
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[] @relation("CategoryHierarchy")
+  
+  // Display & Ordering
+  sortOrder   Int       @default(0)
+  
+  // Status
+  isActive    Boolean   @default(true)
+  
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Soft delete
+  
+  // Relations
+  brands      Brand[]
+  products    Product[]
+
+  @@index([parentId])
+  @@index([isActive])
+  @@index([slug])
+  @@index([sortOrder])
+  @@index([parentId, isActive])
+  @@index([deletedAt])
+  @@map("categories")
+}
+
+// ============================================
+// PRODUCT MANAGEMENT - BRAND
+// ============================================
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  logo        String?   // Logo URL
+  
+  // Category association
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  // Status
+  isActive    Boolean   @default(true)
+  
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  
+  // Relations
+  products    Product[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([slug])
+  @@index([deletedAt])
+  @@map("brands")
+}
+
+// ============================================
+// PRODUCT MANAGEMENT - PRODUCT
+// ============================================
+
+model Product {
+  id            String    @id @default(uuid())
+  sku           String    @unique
+  name          String
+  slug          String    @unique
+  description   String?   @db.Text
+  
+  // Category & Brand
+  categoryId    String
+  brandId       String?
+  category      Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand         Brand?    @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  
+  // Pricing
+  purchasePrice Decimal   @db.Decimal(15, 2)
+  sellingPrice  Decimal   @db.Decimal(15, 2)
+  discount      Decimal?  @default(0) @db.Decimal(5, 2) // Percentage
+  
+  // Stock
+  minStock      Int       @default(0)
+  
+  // Product Details
+  unit          String    @default("PCS") // Unit satuan (PCS, BOX, KG, dll)
+  weight        Decimal?  @db.Decimal(10, 2) // in grams
+  dimensions    Json?     // {length, width, height}
+  
+  // Images
+  images        Json?     // Array of image URLs
+  mainImage     String?
+  
+  // Status
+  isActive      Boolean   @default(true)
+  isFeatured    Boolean   @default(false)
+  
+  // Metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  @@index([sku])
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([isActive])
+  @@index([slug])
+  @@index([categoryId, isActive])
+  @@index([brandId, isActive])
+  @@index([deletedAt])
+  @@map("products")
 }
