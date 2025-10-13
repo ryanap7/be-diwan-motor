@@ -266,3 +266,38 @@ model Product {
   @@index([deletedAt])
   @@map("products")
 }
+
+// ============================================
+// SUPPLIER MANAGEMENT
+// ============================================
+
+model Supplier {
+  id              String    @id @default(uuid())
+  
+  // Supplier Information
+  name            String    @unique
+  contactPerson   String?
+  phone           String
+  email           String?
+  address         String    @db.Text
+  
+  // Business Terms
+  paymentTerms    String?   @db.Text // Net 30 days, COD, dll
+  deliveryTerms   String?   @db.Text // FOB, CIF, dll
+  
+  // Additional Info
+  notes           String?   @db.Text
+  
+  // Status
+  isActive        Boolean   @default(true)
+  
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  @@index([name])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("suppliers")
+}
