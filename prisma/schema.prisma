@@ -154,7 +154,6 @@ model Category {
   deletedAt   DateTime? // Soft delete
   
   // Relations
-  brands      Brand[]
   products    Product[]
 
   @@index([parentId])
@@ -172,14 +171,8 @@ model Category {
 
 model Brand {
   id          String    @id @default(uuid())
-  name        String
-  slug        String    @unique
+  name        String    @unique
   description String?   @db.Text
-  logo        String?   // Logo URL
-  
-  // Category association
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   
   // Status
   isActive    Boolean   @default(true)
@@ -192,9 +185,8 @@ model Brand {
   // Relations
   products    Product[]
 
-  @@index([categoryId])
+  @@index([name])
   @@index([isActive])
-  @@index([slug])
   @@index([deletedAt])
   @@map("brands")
 }
