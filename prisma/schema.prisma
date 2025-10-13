@@ -301,3 +301,34 @@ model Supplier {
   @@index([deletedAt])
   @@map("suppliers")
 }
+
+// ============================================
+// CUSTOMER MANAGEMENT
+// ============================================
+
+model Customer {
+  id              String    @id @default(uuid())
+  
+  // Customer Information
+  name            String
+  phone           String
+  email           String?
+  address         String?   @db.Text
+  
+  // Additional Info
+  notes           String?   @db.Text
+  
+  // Status
+  isActive        Boolean   @default(true)
+  
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  @@index([name])
+  @@index([phone])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("customers")
+}
