@@ -1,13 +1,12 @@
+import routes from '@/routes';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
-import compression from 'compression';
 import { config } from './config/env';
-import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
-import { generalLimiter } from './middlewares/rateLimiter';
 import logger from './config/logger';
-import cookieParser from 'cookie-parser';
-import routes from '@/routes';
+import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 
 // Create Express app
 const app: Application = express();
