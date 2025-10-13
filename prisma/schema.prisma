@@ -29,6 +29,13 @@ enum BranchStatus {
   CLOSED
 }
 
+enum StockMovementType {
+  IN
+  OUT
+  TRANSFER
+  ADJUSTMENT
+}
+
 // ============================================
 // BRANCH MANAGEMENT
 // ============================================
@@ -43,27 +50,26 @@ model Branch {
   postalCode      String
   phone           String
   email           String
-  
   operatingHours  Json?
-  
   status          BranchStatus @default(DRAFT)
   isActive        Boolean      @default(false)
-  
   managerId       String?      @unique
   cashierId       String?      @unique
-  
   activatedAt     DateTime?
   deactivatedAt   DateTime?
   closedAt        DateTime?
-  
   notes           String?      @db.Text
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   deletedAt       DateTime?
 
-  users           User[]
-  manager         User?        @relation("BranchManager", fields: [managerId], references: [id], onDelete: SetNull)
-  cashier         User?        @relation("BranchCashier", fields: [cashierId], references: [id], onDelete: SetNull)
+  users              User[]
+  manager            User?        @relation("BranchManager", fields: [managerId], references: [id], onDelete: SetNull)
+  cashier            User?        @relation("BranchCashier", fields: [cashierId], references: [id], onDelete: SetNull)
+  stocks             Stock[]
+  stockMovements     StockMovement[] @relation("StockMovementBranch")
+  stockMovementsFrom StockMovement[] @relation("StockMovementFrom")
+  stockMovementsTo   StockMovement[] @relation("StockMovementTo")
 
   @@index([code])
   @@index([status])
@@ -76,6 +82,7 @@ model Branch {
   @@index([deletedAt])
   @@map("branches")
 }
+
 
 // ============================================
 // USER MANAGEMENT
@@ -102,6 +109,7 @@ model User {
   primaryCashierAt  Branch?            @relation("BranchCashier")
   
   refreshTokens     RefreshToken[]
+  stockMovements    StockMovement[]    @relation("StockMovementUser")
 
   @@index([username])
   @@index([email])
@@ -111,6 +119,7 @@ model User {
   @@index([deletedAt])
   @@map("users")
 }
+
 
 model RefreshToken {
   id        String   @id @default(uuid())
@@ -224,35 +233,35 @@ model Product {
   
   // Discount/Promo
   hasDiscount     Boolean   @default(false)
-  discountPercent Decimal?  @default(0) @db.Decimal(5, 2) // Percentage (0-100)
-  discountPrice   Decimal?  @db.Decimal(15, 2) // Final price after discount
+  discountPercent Decimal?  @default(0) @db.Decimal(5, 2)
+  discountPrice   Decimal?  @db.Decimal(15, 2)
   
-  // Stock Management
-  minStock        Int       @default(0)
+  // Stock Management Settings (bukan actual stock)
+  minStock        Int       @default(0) // Minimum stock threshold
   
   // Product Details
-  weight          Decimal?  @db.Decimal(10, 2) // in grams
-  dimensions      Json?     // {length, width, height}
+  weight          Decimal?  @db.Decimal(10, 2)
+  dimensions      Json?
+  specifications  Json?
+  storageLocation String?
+  tags            String?   @db.Text
   
-  // Technical Specifications
-  specifications  Json?     // Free-form technical specs
-  
-  // Storage & Organization
-  storageLocation String?   // Lokasi Penyimpanan
-  tags            String?   @db.Text // Comma-separated tags
-  
-  // Images (Max 3)
-  images          Json?     // Array of image URLs (max 3)
-  mainImage       String?   // Primary image
+  // Images
+  images          Json?
+  mainImage       String?
   
   // Status
   isActive        Boolean   @default(true)
   isFeatured      Boolean   @default(false)
   
+  // Relations
+  stocks          Stock[]
+  stockMovements  StockMovement[]
+  
   // Metadata
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime? // Soft delete
+  deletedAt       DateTime?
 
   @@index([sku])
   @@index([barcode])
@@ -260,12 +269,96 @@ model Product {
   @@index([brandId])
   @@index([isActive])
   @@index([slug])
-  @@index([hasDiscount])
-  @@index([categoryId, isActive])
-  @@index([brandId, isActive])
   @@index([deletedAt])
   @@map("products")
 }
+
+// ============================================
+// INVENTORY MANAGEMENT - STOCK PER BRANCH
+// ============================================
+
+model Stock {
+  id              String    @id @default(uuid())
+  
+  // Relations
+  productId       String
+  branchId        String
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  branch          Branch    @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  
+  // Stock Quantity
+  quantity        Int       @default(0) // Current stock
+  
+  // Stock Alert Status (calculated field, bisa di-generate)
+  isLowStock      Boolean   @default(false) // quantity <= product.minStock
+  
+  // Last Stock Activity
+  lastRestockDate DateTime? // Last time stock was added
+  lastSaleDate    DateTime? // Last time stock was sold
+  
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Unique constraint: one stock record per product per branch
+  @@unique([productId, branchId])
+  @@index([productId])
+  @@index([branchId])
+  @@index([isLowStock])
+  @@index([quantity])
+  @@map("stocks")
+}
+
+// ============================================
+// INVENTORY MANAGEMENT - STOCK MOVEMENTS (History)
+// ============================================
+
+model StockMovement {
+  id              String    @id @default(uuid())
+
+  // Relations
+  productId       String
+  branchId        String
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  branch          Branch    @relation("StockMovementBranch", fields: [branchId], references: [id], onDelete: Restrict)
+
+  // Movement Type
+  type            StockMovementType // IN, OUT, TRANSFER, ADJUSTMENT
+
+  // Movement Details
+  quantity        Int
+  previousStock   Int
+  newStock        Int
+
+  // Transfer specific
+  fromBranchId    String?
+  toBranchId      String?
+  fromBranch      Branch?   @relation("StockMovementFrom", fields: [fromBranchId], references: [id], onDelete: SetNull)
+  toBranch        Branch?   @relation("StockMovementTo", fields: [toBranchId], references: [id], onDelete: SetNull)
+
+  // Reference
+  referenceType   String?
+  referenceId     String?
+
+  // Additional Info
+  notes           String?   @db.Text
+  reason          String?
+
+  // User tracking
+  performedBy     String
+  user            User      @relation("StockMovementUser", fields: [performedBy], references: [id], onDelete: Restrict)
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+
+  @@index([productId])
+  @@index([branchId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([referenceType, referenceId])
+  @@map("stock_movements")
+}
+
 
 // ============================================
 // SUPPLIER MANAGEMENT

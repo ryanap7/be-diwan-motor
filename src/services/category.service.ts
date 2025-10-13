@@ -75,7 +75,14 @@ export class CategoryService {
     }
 
     async getCategories(query: GetCategoriesQuery) {
-        const { page, limit, search, isActive, sortBy, sortOrder } = query;
+        const {
+            page = 1,
+            limit = 10,
+            search,
+            isActive,
+            sortBy,
+            sortOrder,
+        } = query;
 
         const skip = (page - 1) * limit;
 

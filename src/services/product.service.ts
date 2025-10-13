@@ -117,8 +117,8 @@ export class ProductService {
 
     async getProducts(query: GetProductsQuery) {
         const {
-            page,
-            limit,
+            page = 1,
+            limit = 10,
             search,
             categoryId,
             brandId,

@@ -45,7 +45,14 @@ export class SupplierService {
     }
 
     async getSuppliers(query: GetSuppliersQuery) {
-        const { page, limit, search, isActive, sortBy, sortOrder } = query;
+        const {
+            page = 1,
+            limit = 10,
+            search,
+            isActive,
+            sortBy,
+            sortOrder,
+        } = query;
 
         const skip = (page - 1) * limit;
 

@@ -5,6 +5,7 @@ import brandRoutes from './brand.routes';
 import categoryRoutes from './category.routes';
 import customerRoutes from './customer.routes';
 import productRoutes from './product.routes';
+import stockRoutes from './stock.routes';
 import supplierRoutes from './supplier.routes';
 import userRoutes from './user.routes';
 
@@ -28,5 +29,6 @@ router.use('/brands', brandRoutes);
 router.use('/products', productRoutes);
 router.use('/suppliers', supplierRoutes);
 router.use('/customers', customerRoutes);
+router.use('/stocks', stockRoutes);
 
 export default router;
