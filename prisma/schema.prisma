@@ -196,49 +196,71 @@ model Brand {
 // ============================================
 
 model Product {
-  id            String    @id @default(uuid())
-  sku           String    @unique
-  name          String
-  slug          String    @unique
-  description   String?   @db.Text
+  id              String    @id @default(uuid())
+  
+  // Product Identification
+  sku             String    @unique // Part Number
+  barcode         String?   @unique
+  name            String
+  slug            String    @unique
+  description     String?   @db.Text
   
   // Category & Brand
-  categoryId    String
-  brandId       String?
-  category      Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  brand         Brand?    @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  categoryId      String
+  brandId         String?
+  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand           Brand?    @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  
+  // Unit of Measurement
+  unit            String    @default("PCS") // PCS, Unit, Box, Lusin, Karton, Kg, Liter, Meter, Set
+  
+  // Compatible Vehicle Models
+  compatibleModels String?  @db.Text // Comma-separated values
   
   // Pricing
-  purchasePrice Decimal   @db.Decimal(15, 2)
-  sellingPrice  Decimal   @db.Decimal(15, 2)
-  discount      Decimal?  @default(0) @db.Decimal(5, 2) // Percentage
+  purchasePrice   Decimal   @db.Decimal(15, 2) // Harga Beli
+  sellingPrice    Decimal   @db.Decimal(15, 2) // Harga Normal
+  wholesalePrice  Decimal?  @db.Decimal(15, 2) // Harga Grosir 
   
-  // Stock
-  minStock      Int       @default(0)
+  // Discount/Promo
+  hasDiscount     Boolean   @default(false)
+  discountPercent Decimal?  @default(0) @db.Decimal(5, 2) // Percentage (0-100)
+  discountPrice   Decimal?  @db.Decimal(15, 2) // Final price after discount
+  
+  // Stock Management
+  minStock        Int       @default(0)
   
   // Product Details
-  unit          String    @default("PCS") // Unit satuan (PCS, BOX, KG, dll)
-  weight        Decimal?  @db.Decimal(10, 2) // in grams
-  dimensions    Json?     // {length, width, height}
+  weight          Decimal?  @db.Decimal(10, 2) // in grams
+  dimensions      Json?     // {length, width, height}
   
-  // Images
-  images        Json?     // Array of image URLs
-  mainImage     String?
+  // Technical Specifications
+  specifications  Json?     // Free-form technical specs
+  
+  // Storage & Organization
+  storageLocation String?   // Lokasi Penyimpanan
+  tags            String?   @db.Text // Comma-separated tags
+  
+  // Images (Max 3)
+  images          Json?     // Array of image URLs (max 3)
+  mainImage       String?   // Primary image
   
   // Status
-  isActive      Boolean   @default(true)
-  isFeatured    Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  isFeatured      Boolean   @default(false)
   
   // Metadata
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // Soft delete
 
   @@index([sku])
+  @@index([barcode])
   @@index([categoryId])
   @@index([brandId])
   @@index([isActive])
   @@index([slug])
+  @@index([hasDiscount])
   @@index([categoryId, isActive])
   @@index([brandId, isActive])
   @@index([deletedAt])

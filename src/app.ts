@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import { config } from './config/env';
 import logger from './config/logger';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
+import path from 'path';
 
 // Create Express app
 const app: Application = express();
@@ -44,6 +45,9 @@ app.use((req: Request, _res: Response, next) => {
 
 // API Routes
 app.use('/api', routes);
+
+// Serve static files
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // 404 handler (must be after all routes)
 app.use(notFoundHandler);

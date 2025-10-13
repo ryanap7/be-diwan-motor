@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
-import userRoutes from './user.routes';
 import branchRoutes from './branch.routes';
-import categoryRoutes from './category.routes';
 import brandRoutes from './brand.routes';
+import categoryRoutes from './category.routes';
+import productRoutes from './product.routes';
+import userRoutes from './user.routes';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/users', userRoutes);
 router.use('/branches', branchRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/brands', brandRoutes);
+router.use('/products', productRoutes);
 
 export default router;

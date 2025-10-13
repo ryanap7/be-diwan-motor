@@ -1,14 +1,14 @@
 import { authenticate, authorize } from '@/middlewares/auth.middleware';
 import { validate } from '@/middlewares/validation';
 import { Router } from 'express';
-import { BrandController } from '../controllers/brand.controller';
+import { BrandController } from '@/controllers/brand.controller';
 import {
     createBrandSchema,
     deleteBrandSchema,
     getBrandByIdSchema,
     toggleBrandStatusSchema,
     updateBrandSchema,
-} from '../validators/brand.validator';
+} from '@/validators/brand.validator';
 
 const router = Router();
 const brandController = new BrandController();
