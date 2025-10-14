@@ -27,15 +27,14 @@ export class TransactionService {
         cashierId: string,
         branchId: string
     ) {
-        // Start transaction
         return await prisma.$transaction(async (tx) => {
-            // 1. Generate invoice number
+            // Generate invoice number
             const invoiceNumber =
                 await this.transactionRepository.generateInvoiceNumber(
                     branchId
                 );
 
-            // 2. Validate customer if provided
+            // Validate customer if provided
             if (data.customerId) {
                 const customer = await this.customerRepository.findById(
                     data.customerId
@@ -48,7 +47,7 @@ export class TransactionService {
                 }
             }
 
-            // 3. Validate products and check stock
+            // Validate products and check stock
             const stockUpdates: Array<{
                 productId: string;
                 branchId: string;
@@ -92,7 +91,7 @@ export class TransactionService {
                 });
             }
 
-            // 4. Create transaction with items
+            // Create transaction with items
             const transaction = await tx.transaction.create({
                 data: {
                     invoiceNumber,
@@ -122,7 +121,7 @@ export class TransactionService {
                                         connect: { id: item.productId },
                                     },
                                     productName: product!.name,
-                                    productSku: product!.sku,
+                                    productSku: product!.sku ?? '',
                                     quantity: item.quantity,
                                     unitPrice: item.unitPrice,
                                     subtotal: item.subtotal,
@@ -178,7 +177,7 @@ export class TransactionService {
                 },
             });
 
-            // 5. Update stock and create stock movements
+            // Update stock and create stock movements
             for (const stockUpdate of stockUpdates) {
                 const currentStock = await tx.stock.findUnique({
                     where: {

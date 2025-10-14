@@ -293,7 +293,7 @@ model Product {
   id              String    @id @default(uuid())
   
   // Product Identification
-  sku             String    @unique // Part Number
+  sku             String?   @unique
   barcode         String?   @unique
   name            String
   slug            String    @unique
@@ -323,6 +323,7 @@ model Product {
   
   // Stock Management Settings (bukan actual stock)
   minStock        Int       @default(0) // Minimum stock threshold
+  minOrderWholesale Int?
   
   // Product Details
   weight          Decimal?  @db.Decimal(10, 2)

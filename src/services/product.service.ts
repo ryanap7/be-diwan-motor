@@ -37,15 +37,6 @@ export class ProductService {
         // Generate slug
         const slug = this.generateSlug(data.name);
 
-        // Check if SKU already exists
-        const existingSku = await this.productRepository.findBySku(data.sku);
-        if (existingSku) {
-            throw new ConflictError(
-                'Product with this SKU already exists',
-                'SKU_EXISTS'
-            );
-        }
-
         // Check if barcode already exists (if provided)
         if (data.barcode) {
             const existingBarcode = await this.productRepository.findByBarcode(
@@ -88,7 +79,7 @@ export class ProductService {
 
         // Create product
         const product = await this.productRepository.create({
-            sku: data.sku,
+            sku: data.sku ?? null,
             barcode: data.barcode,
             name: data.name,
             slug,
