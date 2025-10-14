@@ -36,6 +36,15 @@ enum StockMovementType {
   ADJUSTMENT
 }
 
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
 // ============================================
 // BRANCH MANAGEMENT
 // ============================================
@@ -70,6 +79,7 @@ model Branch {
   stockMovements     StockMovement[] @relation("StockMovementBranch")
   stockMovementsFrom StockMovement[] @relation("StockMovementFrom")
   stockMovementsTo   StockMovement[] @relation("StockMovementTo")
+  purchaseOrders PurchaseOrder[]
 
   @@index([code])
   @@index([status])
@@ -110,6 +120,9 @@ model User {
   
   refreshTokens     RefreshToken[]
   stockMovements    StockMovement[]    @relation("StockMovementUser")
+  createdPurchaseOrders   PurchaseOrder[] @relation("POCreator")
+  approvedPurchaseOrders  PurchaseOrder[] @relation("POApprover")
+  receivedPurchaseOrders  PurchaseOrder[] @relation("POReceiver")
 
   @@index([username])
   @@index([email])
@@ -257,6 +270,7 @@ model Product {
   // Relations
   stocks          Stock[]
   stockMovements  StockMovement[]
+  purchaseOrderItems PurchaseOrderItem[]
   
   // Metadata
   createdAt       DateTime  @default(now())
@@ -307,6 +321,95 @@ model Stock {
   @@index([isLowStock])
   @@index([quantity])
   @@map("stocks")
+}
+
+// ============================================
+// INVENTORY MANAGEMENT - PURCHASE ORDERS
+// ============================================
+
+model PurchaseOrder {
+  id                String                @id @default(uuid())
+  
+  // PO Number (Auto-generated)
+  poNumber          String                @unique // Format: PO-YYYYMMDD-XXXX
+  
+  // Relations
+  supplierId        String
+  branchId          String                // Destination branch
+  supplier          Supplier              @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  branch            Branch                @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  
+  // PO Details
+  orderDate         DateTime              @default(now())
+  expectedDate      DateTime?             // Expected delivery date
+  receivedDate      DateTime?             // Actual delivery date
+  
+  // Status
+  status            PurchaseOrderStatus   @default(DRAFT)
+  
+  // Financial
+  subtotal          Decimal               @db.Decimal(15, 2)
+  taxAmount         Decimal               @default(0) @db.Decimal(15, 2)
+  discountAmount    Decimal               @default(0) @db.Decimal(15, 2)
+  shippingCost      Decimal               @default(0) @db.Decimal(15, 2)
+  totalAmount       Decimal               @db.Decimal(15, 2)
+  
+  // Additional Info
+  notes             String?               @db.Text
+  paymentTerms      String?               // e.g., "Net 30", "COD", "50% DP"
+  
+  // Tracking
+  createdBy         String
+  approvedBy        String?
+  receivedBy        String?
+  creator           User                  @relation("POCreator", fields: [createdBy], references: [id], onDelete: Restrict)
+  approver          User?                 @relation("POApprover", fields: [approvedBy], references: [id], onDelete: Restrict)
+  receiver          User?                 @relation("POReceiver", fields: [receivedBy], references: [id], onDelete: Restrict)
+  
+  // Items
+  items             PurchaseOrderItem[]
+  
+  // Metadata
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  deletedAt         DateTime?
+  
+  @@index([poNumber])
+  @@index([supplierId])
+  @@index([branchId])
+  @@index([status])
+  @@index([orderDate])
+  @@index([createdAt])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id                String          @id @default(uuid())
+  
+  // Relations
+  purchaseOrderId   String
+  productId         String
+  purchaseOrder     PurchaseOrder   @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product           Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  // Quantities
+  orderedQty        Int             // Quantity ordered
+  receivedQty       Int             @default(0) // Quantity received
+  
+  // Pricing
+  unitPrice         Decimal         @db.Decimal(15, 2)
+  subtotal          Decimal         @db.Decimal(15, 2) // orderedQty * unitPrice
+  
+  // Additional Info
+  notes             String?
+  
+  // Metadata
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@index([purchaseOrderId])
+  @@index([productId])
+  @@map("purchase_order_items")
 }
 
 // ============================================
@@ -383,6 +486,9 @@ model Supplier {
   
   // Status
   isActive        Boolean   @default(true)
+
+  // Relations
+  purchaseOrders  PurchaseOrder[] 
   
   // Metadata
   createdAt       DateTime  @default(now())
