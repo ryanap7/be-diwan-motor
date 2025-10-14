@@ -8,6 +8,7 @@ import settingRoutes from './company-setting.routes';
 import customerRoutes from './customer.routes';
 import productRoutes from './product.routes';
 import purchaseOrderRoutes from './purchase-order.routes';
+import reportRoutes from './report.routes';
 import stockRoutes from './stock.routes';
 import supplierRoutes from './supplier.routes';
 import transactionRoutes from './transaction.routes';
@@ -38,5 +39,6 @@ router.use('/purchase-orders', purchaseOrderRoutes);
 router.use('/activity-logs', activityLogRoutes);
 router.use('/settings', settingRoutes);
 router.use('/transactions', transactionRoutes);
+router.use('/reports', reportRoutes);
 
 export default router;
