@@ -150,16 +150,19 @@ export const createBranchSchema = z.object({
             .string()
             .min(2, 'City must be at least 2 characters')
             .max(100, 'City must not exceed 100 characters')
-            .trim(),
+            .trim()
+            .optional(),
         province: z
             .string()
             .min(2, 'Province must be at least 2 characters')
             .max(100, 'Province must not exceed 100 characters')
-            .trim(),
+            .trim()
+            .optional(),
         postalCode: z
             .string()
             .regex(/^[0-9]{5}$/, 'Postal code must be exactly 5 digits')
-            .trim(),
+            .trim()
+            .optional(),
         phone: z
             .string()
             .regex(

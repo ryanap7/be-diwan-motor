@@ -123,9 +123,9 @@ model Branch {
   code            String       @unique
   name            String
   address         String       @db.Text
-  city            String
-  province        String
-  postalCode      String
+  city            String?
+  province        String?
+  postalCode      String?
   phone           String
   email           String
   operatingHours  Json?
