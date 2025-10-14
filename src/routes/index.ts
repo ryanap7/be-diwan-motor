@@ -4,6 +4,7 @@ import authRoutes from './auth.routes';
 import branchRoutes from './branch.routes';
 import brandRoutes from './brand.routes';
 import categoryRoutes from './category.routes';
+import settingRoutes from './company-setting.routes';
 import customerRoutes from './customer.routes';
 import productRoutes from './product.routes';
 import purchaseOrderRoutes from './purchase-order.routes';
@@ -34,5 +35,6 @@ router.use('/customers', customerRoutes);
 router.use('/stocks', stockRoutes);
 router.use('/purchase-orders', purchaseOrderRoutes);
 router.use('/activity-logs', activityLogRoutes);
+router.use('/settings', settingRoutes);
 
 export default router;

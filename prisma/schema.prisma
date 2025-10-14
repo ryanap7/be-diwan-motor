@@ -642,3 +642,36 @@ model ActivityLog {
   @@index([action, entityType])
   @@map("activity_logs")
 }
+
+// ============================================
+// COMPANY SETTINGS
+// ============================================
+
+model CompanySetting {
+  id              String    @id @default(uuid())
+  
+  // Company Information
+  companyName     String
+  address         String    @db.Text
+  phone           String
+  email           String
+  taxNumber       String?   // NPWP
+  
+  // Logo
+  logoUrl         String?   @db.Text
+  
+  // Business Settings
+  currency        String    @default("IDR")
+  timezone        String    @default("Asia/Jakarta")
+  dateFormat      String    @default("DD/MM/YYYY")
+  
+  // Additional Settings (JSON for flexibility)
+  settings        Json?     // For future extensibility
+  
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Singleton pattern - only one record should exist
+  @@map("company_settings")
+}

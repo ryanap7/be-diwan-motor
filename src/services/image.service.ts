@@ -4,29 +4,39 @@ import fs from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ImageService {
-    private uploadDir = path.join(process.cwd(), 'uploads', 'products');
+    private productUploadDir = path.join(process.cwd(), 'uploads', 'products');
+    private companyUploadDir = path.join(process.cwd(), 'uploads', 'company');
     private baseUrl = process.env.BASE_URL || 'http://localhost:8000';
 
     constructor() {
-        this.ensureUploadDir();
+        this.ensureUploadDirs();
     }
 
-    private async ensureUploadDir() {
+    private async ensureUploadDirs() {
         try {
-            await fs.access(this.uploadDir);
+            await fs.access(this.productUploadDir);
         } catch {
-            await fs.mkdir(this.uploadDir, { recursive: true });
+            await fs.mkdir(this.productUploadDir, { recursive: true });
+        }
+
+        try {
+            await fs.access(this.companyUploadDir);
+        } catch {
+            await fs.mkdir(this.companyUploadDir, { recursive: true });
         }
     }
 
-    async processAndSaveImage(
+    /**
+     * Process and save product image
+     */
+    async processAndSaveProductImage(
         buffer: Buffer,
         filename: string
     ): Promise<string> {
         const uniqueFilename = `${uuidv4()}-${Date.now()}${path.extname(
             filename
         )}`;
-        const filepath = path.join(this.uploadDir, uniqueFilename);
+        const filepath = path.join(this.productUploadDir, uniqueFilename);
 
         // Process image with sharp
         await sharp(buffer)
@@ -40,10 +50,47 @@ export class ImageService {
         return `${this.baseUrl}/uploads/products/${uniqueFilename}`;
     }
 
+    /**
+     * Process and save company logo
+     */
+    async processAndSaveCompanyLogo(
+        buffer: Buffer,
+        filename: string
+    ): Promise<string> {
+        const uniqueFilename = `logo-${uuidv4()}-${Date.now()}${path.extname(
+            filename
+        )}`;
+        const filepath = path.join(this.companyUploadDir, uniqueFilename);
+
+        // Process logo with sharp (smaller size for logo)
+        await sharp(buffer)
+            .resize(500, 500, {
+                fit: 'inside',
+                withoutEnlargement: true,
+            })
+            .png({ quality: 90 }) // Use PNG for logo to support transparency
+            .toFile(filepath);
+
+        return `${this.baseUrl}/uploads/company/${uniqueFilename}`;
+    }
+
+    /**
+     * Delete image by URL
+     */
     async deleteImage(imageUrl: string): Promise<void> {
         try {
             const filename = path.basename(imageUrl);
-            const filepath = path.join(this.uploadDir, filename);
+
+            // Check if it's a product or company image
+            let filepath: string;
+            if (imageUrl.includes('/uploads/products/')) {
+                filepath = path.join(this.productUploadDir, filename);
+            } else if (imageUrl.includes('/uploads/company/')) {
+                filepath = path.join(this.companyUploadDir, filename);
+            } else {
+                return; // Unknown path, skip deletion
+            }
+
             await fs.unlink(filepath);
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -51,7 +98,33 @@ export class ImageService {
         }
     }
 
+    /**
+     * Delete multiple images
+     */
     async deleteMultipleImages(imageUrls: string[]): Promise<void> {
         await Promise.all(imageUrls.map((url) => this.deleteImage(url)));
+    }
+
+    /**
+     * Validate image file
+     */
+    validateImageFile(mimetype: string, size: number): void {
+        const allowedMimes = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/webp',
+        ];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!allowedMimes.includes(mimetype)) {
+            throw new Error(
+                'Invalid file type. Only JPEG, PNG, and WebP are allowed'
+            );
+        }
+
+        if (size > maxSize) {
+            throw new Error('File size too large. Maximum size is 5MB');
+        }
     }
 }

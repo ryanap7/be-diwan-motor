@@ -1,6 +1,6 @@
-import multer from 'multer';
-import { Request } from 'express';
 import { BadRequestError } from '@/utils/errors';
+import { Request } from 'express';
+import multer from 'multer';
 
 // Configure storage
 const storage = multer.memoryStorage();
