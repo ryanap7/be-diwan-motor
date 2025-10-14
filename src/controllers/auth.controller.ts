@@ -17,7 +17,8 @@ export class AuthController {
     ): Promise<void> => {
         try {
             const data: LoginInput = req.body;
-            const result = await this.authService.login(data);
+            // Pass req for activity logging
+            const result = await this.authService.login(data, req);
 
             ResponseHandler.success(res, result, 'Login successful', 200);
         } catch (error) {
@@ -32,7 +33,11 @@ export class AuthController {
     ): Promise<void> => {
         try {
             const { refreshToken }: RefreshTokenInput = req.body;
-            const result = await this.authService.refreshToken(refreshToken);
+            // Pass req for activity logging
+            const result = await this.authService.refreshToken(
+                refreshToken,
+                req
+            );
 
             ResponseHandler.success(
                 res,
@@ -52,7 +57,8 @@ export class AuthController {
     ): Promise<void> => {
         try {
             const { refreshToken } = req.body;
-            const result = await this.authService.logout(refreshToken);
+            // Pass req for activity logging
+            const result = await this.authService.logout(refreshToken, req);
 
             ResponseHandler.success(res, null, result.message, 200);
         } catch (error) {
@@ -67,7 +73,8 @@ export class AuthController {
     ): Promise<void> => {
         try {
             const userId = req.user!.userId;
-            const result = await this.authService.logoutAll(userId);
+            // Pass req for activity logging
+            const result = await this.authService.logoutAll(userId, req);
 
             ResponseHandler.success(res, null, result.message, 200);
         } catch (error) {

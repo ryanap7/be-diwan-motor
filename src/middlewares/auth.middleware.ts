@@ -27,8 +27,11 @@ export const authenticate = (
         // Verify token
         const decoded = verifyAccessToken(token);
 
-        // Attach user to request
-        req.user = decoded;
+        // Attach user to request, converting role to UserRole enum
+        req.user = {
+            ...decoded,
+            role: decoded.role as UserRole,
+        };
 
         next();
     } catch (error) {

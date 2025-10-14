@@ -45,6 +45,61 @@ enum PurchaseOrderStatus {
   CANCELLED
 }
 
+enum ActivityAction {
+  // Authentication
+  LOGIN
+  LOGOUT
+  REFRESH_TOKEN
+  
+  // CRUD Operations
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  
+  // Purchase Order Specific
+  SUBMIT_PO
+  APPROVE_PO
+  RECEIVE_PO
+  CANCEL_PO
+  
+  // Stock Operations
+  STOCK_IN
+  STOCK_OUT
+  STOCK_TRANSFER
+  STOCK_ADJUSTMENT
+  
+  // Branch Operations
+  ACTIVATE_BRANCH
+  DEACTIVATE_BRANCH
+  CLOSE_BRANCH
+  
+  // Product Operations
+  UPDATE_PROMO
+  ACTIVATE_PRODUCT
+  DEACTIVATE_PRODUCT
+  
+  // Other Operations
+  IMPORT
+  EXPORT
+  BULK_UPDATE
+  BULK_DELETE
+}
+
+enum EntityType {
+  USER
+  BRANCH
+  PRODUCT
+  CATEGORY
+  BRAND
+  STOCK
+  PURCHASE_ORDER
+  SUPPLIER
+  CUSTOMER
+  STOCK_MOVEMENT
+  AUTHENTICATION
+}
+
 // ============================================
 // BRANCH MANAGEMENT
 // ============================================
@@ -119,6 +174,7 @@ model User {
   primaryCashierAt  Branch?            @relation("BranchCashier")
   
   refreshTokens     RefreshToken[]
+  activityLogs      ActivityLog[]
   stockMovements    StockMovement[]    @relation("StockMovementUser")
   createdPurchaseOrders   PurchaseOrder[] @relation("POCreator")
   approvedPurchaseOrders  PurchaseOrder[] @relation("POApprover")
@@ -530,4 +586,59 @@ model Customer {
   @@index([isActive])
   @@index([deletedAt])
   @@map("customers")
+}
+
+// ============================================
+// ACTIVITY LOG / AUDIT TRAIL
+// ============================================
+
+model ActivityLog {
+  id              String         @id @default(uuid())
+  
+  // User Information
+  userId          String?
+  username        String
+  userRole        String?
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Action Details
+  action          ActivityAction
+  entityType      EntityType
+  entityId        String?        // ID of the affected entity
+  entityName      String?        // Name/identifier for display
+  
+  // Description
+  description     String         @db.Text // Human-readable description
+  
+  // Audit Trail (Before/After)
+  beforeData      Json?          // Data before change
+  afterData       Json?          // Data after change
+  changes         Json?          // Specific fields that changed
+  
+  // Request Information
+  method          String?        // HTTP method (GET, POST, PUT, etc)
+  endpoint        String?        // API endpoint
+  statusCode      Int?           // HTTP status code
+  
+  // Client Information
+  ipAddress       String
+  userAgent       String?        @db.Text
+  
+  // Additional Context
+  metadata        Json?          // Any additional contextual data
+  errorMessage    String?        @db.Text // If action failed
+  
+  // Timestamp
+  createdAt       DateTime       @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
+  @@index([ipAddress])
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, entityType])
+  @@map("activity_logs")
 }

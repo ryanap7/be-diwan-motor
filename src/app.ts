@@ -1,13 +1,14 @@
+import { activityLogger } from '@/middlewares/activity-logger.middleware';
 import routes from '@/routes';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import helmet from 'helmet';
+import path from 'path';
 import { config } from './config/env';
 import logger from './config/logger';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
-import path from 'path';
 
 // Create Express app
 const app: Application = express();
@@ -43,7 +44,10 @@ app.use((req: Request, _res: Response, next) => {
     next();
 });
 
-// API Routes
+// Activity Logger - Will check for authentication inside
+app.use(activityLogger);
+
+// API Routes (routes contain authenticate middleware inside)
 app.use('/api', routes);
 
 // Serve static files

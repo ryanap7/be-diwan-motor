@@ -1,14 +1,15 @@
 import { Router } from 'express';
+import activityLogRoutes from './activity-log.routes';
 import authRoutes from './auth.routes';
 import branchRoutes from './branch.routes';
 import brandRoutes from './brand.routes';
 import categoryRoutes from './category.routes';
 import customerRoutes from './customer.routes';
 import productRoutes from './product.routes';
+import purchaseOrderRoutes from './purchase-order.routes';
 import stockRoutes from './stock.routes';
 import supplierRoutes from './supplier.routes';
 import userRoutes from './user.routes';
-import purchaseOrderRoutes from './purchase-order.routes';
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use('/suppliers', supplierRoutes);
 router.use('/customers', customerRoutes);
 router.use('/stocks', stockRoutes);
 router.use('/purchase-orders', purchaseOrderRoutes);
+router.use('/activity-logs', activityLogRoutes);
 
 export default router;
