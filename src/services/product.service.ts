@@ -414,7 +414,7 @@ export class ProductService {
         // Process and save images
         const uploadedUrls = await Promise.all(
             files.map((file) =>
-                this.imageService.processAndSaveImage(
+                this.imageService.processAndSaveProductImage(
                     file.buffer,
                     file.originalname
                 )
