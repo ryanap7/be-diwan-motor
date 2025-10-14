@@ -21,8 +21,17 @@ const envSchema = z.object({
     JWT_REFRESH_SECRET: z.string().min(32),
     JWT_REFRESH_EXPIRES_IN: z.string().default('30d'),
 
-    // CORS
-    ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
+    // CORS - Transform to properly parse origins
+    ALLOWED_ORIGINS: z
+        .string()
+        .default('http://localhost:3000')
+        .transform((val) =>
+            val
+                .split(',')
+                .map((origin) => origin.trim())
+                .map((origin) => origin.replace(/\/$/, ''))
+                .filter((origin) => origin.length > 0)
+        ),
 
     // Rate Limiting
     RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default(900000),
@@ -71,7 +80,7 @@ export const config = {
         refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
     },
     cors: {
-        allowedOrigins: env.ALLOWED_ORIGINS.split(','),
+        allowedOrigins: env.ALLOWED_ORIGINS, // Already transformed to array by Zod
     },
     rateLimit: {
         windowMs: env.RATE_LIMIT_WINDOW_MS,
@@ -86,3 +95,8 @@ export const config = {
         maxPageSize: env.MAX_PAGE_SIZE,
     },
 } as const;
+
+// Debug log in development
+if (env.NODE_ENV === 'development') {
+    console.log('🌐 CORS Allowed Origins:', config.cors.allowedOrigins);
+}
