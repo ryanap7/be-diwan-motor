@@ -29,8 +29,13 @@ export const authenticate = (
 
         // Attach user to request, converting role to UserRole enum
         req.user = {
-            ...decoded,
+            userId: decoded.userId,
+            username: decoded.username,
+            email: decoded.email,
             role: decoded.role as UserRole,
+            ...(decoded.branchId !== null && decoded.branchId !== undefined
+                ? { branchId: decoded.branchId }
+                : {}),
         };
 
         next();

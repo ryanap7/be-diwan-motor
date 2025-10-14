@@ -126,6 +126,7 @@ export class AuthService {
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                branchId: user.branch?.id ?? null,
             };
 
             // Generate tokens
@@ -226,6 +227,7 @@ export class AuthService {
                 username: user.username,
                 email: user.email,
                 role: user.role,
+                branchId: user.branch?.id ?? null,
             });
 
             // ✅ LOG REFRESH TOKEN

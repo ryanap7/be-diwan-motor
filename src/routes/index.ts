@@ -10,6 +10,7 @@ import productRoutes from './product.routes';
 import purchaseOrderRoutes from './purchase-order.routes';
 import stockRoutes from './stock.routes';
 import supplierRoutes from './supplier.routes';
+import transactionRoutes from './transaction.routes';
 import userRoutes from './user.routes';
 
 const router = Router();
@@ -36,5 +37,6 @@ router.use('/stocks', stockRoutes);
 router.use('/purchase-orders', purchaseOrderRoutes);
 router.use('/activity-logs', activityLogRoutes);
 router.use('/settings', settingRoutes);
+router.use('/transactions', transactionRoutes);
 
 export default router;

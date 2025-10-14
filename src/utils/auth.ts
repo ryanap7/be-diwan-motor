@@ -23,6 +23,7 @@ export interface JWTPayload {
     username: string;
     email: string;
     role: string;
+    branchId: string | null;
 }
 
 // Generate Access Token

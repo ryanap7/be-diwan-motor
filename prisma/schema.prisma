@@ -100,6 +100,20 @@ enum EntityType {
   AUTHENTICATION
 }
 
+enum PaymentMethod {
+  CASH
+  DEBIT_CARD
+  CREDIT_CARD
+  TRANSFER
+  QRIS
+}
+
+enum TransactionStatus {
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
 // ============================================
 // BRANCH MANAGEMENT
 // ============================================
@@ -135,6 +149,7 @@ model Branch {
   stockMovementsFrom StockMovement[] @relation("StockMovementFrom")
   stockMovementsTo   StockMovement[] @relation("StockMovementTo")
   purchaseOrders PurchaseOrder[]
+  transactions    Transaction[]
 
   @@index([code])
   @@index([status])
@@ -179,6 +194,7 @@ model User {
   createdPurchaseOrders   PurchaseOrder[] @relation("POCreator")
   approvedPurchaseOrders  PurchaseOrder[] @relation("POApprover")
   receivedPurchaseOrders  PurchaseOrder[] @relation("POReceiver")
+  transactions    Transaction[]   @relation("TransactionCashier")
 
   @@index([username])
   @@index([email])
@@ -327,6 +343,7 @@ model Product {
   stocks          Stock[]
   stockMovements  StockMovement[]
   purchaseOrderItems PurchaseOrderItem[]
+  transactionItems TransactionItem[]
   
   // Metadata
   createdAt       DateTime  @default(now())
@@ -575,6 +592,9 @@ model Customer {
   
   // Status
   isActive        Boolean   @default(true)
+
+  // Relations
+  transactions    Transaction[]
   
   // Metadata
   createdAt       DateTime  @default(now())
@@ -674,4 +694,88 @@ model CompanySetting {
   
   // Singleton pattern - only one record should exist
   @@map("company_settings")
+}
+
+// ============================================
+// TRANSACTION/POS MANAGEMENT
+// ============================================
+
+model Transaction {
+  id              String              @id @default(uuid())
+  
+  // Invoice Number (Auto-generated)
+  invoiceNumber   String              @unique // Format: INV-YYYYMMDD-XXX
+  
+  // Relations
+  branchId        String
+  cashierId       String              // User who processes the transaction
+  customerId      String?             // Optional customer
+  
+  branch          Branch              @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  cashier         User                @relation("TransactionCashier", fields: [cashierId], references: [id], onDelete: Restrict)
+  customer        Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  // Transaction Financial Details
+  subtotal        Decimal             @db.Decimal(15, 2)
+  taxAmount       Decimal             @default(0) @db.Decimal(15, 2)
+  discountAmount  Decimal             @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal             @db.Decimal(15, 2)
+  
+  // Payment Details
+  paymentMethod   PaymentMethod       @default(CASH)
+  amountPaid      Decimal             @db.Decimal(15, 2)
+  changeAmount    Decimal             @db.Decimal(15, 2)
+  
+  // Additional Info
+  notes           String?             @db.Text
+  
+  // Status
+  status          TransactionStatus   @default(COMPLETED)
+  
+  // Items
+  items           TransactionItem[]
+  
+  // Timestamps
+  transactionDate DateTime            @default(now())
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  deletedAt       DateTime?           // Soft delete
+  
+  @@index([invoiceNumber])
+  @@index([branchId])
+  @@index([cashierId])
+  @@index([customerId])
+  @@index([status])
+  @@index([transactionDate])
+  @@index([createdAt])
+  @@index([branchId, transactionDate])
+  @@index([cashierId, transactionDate])
+  @@index([deletedAt])
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id              String      @id @default(uuid())
+  
+  // Relations
+  transactionId   String
+  productId       String
+  
+  transaction     Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product         Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  // Item Details (snapshot at transaction time)
+  productName     String
+  productSku      String
+  quantity        Int
+  unitPrice       Decimal     @db.Decimal(15, 2)
+  subtotal        Decimal     @db.Decimal(15, 2)
+  
+  // Metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([transactionId])
+  @@index([productId])
+  @@map("transaction_items")
 }
