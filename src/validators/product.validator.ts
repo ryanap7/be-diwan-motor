@@ -75,6 +75,7 @@ export const getProductsQuerySchema = z.object({
         limit: z.coerce.number().int().positive().max(100).optional(),
         search: z.string().trim().optional(),
         categoryId: z.string().uuid().optional(),
+        branchId: z.string().uuid().optional(),
         brandId: z.string().uuid().optional(),
         isActive: z.enum(['true', 'false']).optional(),
         isFeatured: z.enum(['true', 'false']).optional(),

@@ -120,6 +120,7 @@ export class ProductService {
             maxPrice,
             sortBy,
             sortOrder,
+            branchId, // Add this parameter
         } = query;
 
         const skip = (page - 1) * limit;
@@ -177,12 +178,67 @@ export class ProductService {
             [sortBy]: sortOrder,
         };
 
-        const { products, total } = await this.productRepository.findMany({
-            skip,
-            take: limit,
-            where,
-            orderBy: orderByClause,
-        });
+        // Use different repository method based on whether we need stock info
+        let products, total;
+
+        if (branchId !== undefined) {
+            // Get products with stock information
+            const result = await this.productRepository.findManyWithStocks({
+                skip,
+                take: limit,
+                where,
+                orderBy: orderByClause,
+                branchId,
+            });
+
+            products = result.products;
+            total = result.total;
+
+            // Format products with stock information
+            products = products.map((product: any) => {
+                let stockQuantity = 0;
+                let isLowStock = true;
+
+                if (product.stocks && product.stocks.length > 0) {
+                    if (branchId) {
+                        // For specific branch
+                        const branchStock = product.stocks[0];
+                        stockQuantity = branchStock.quantity || 0;
+                        isLowStock = branchStock.isLowStock ?? true;
+                    } else {
+                        // Total across all branches
+                        stockQuantity = product.stocks.reduce(
+                            (sum: number, stock: any) =>
+                                sum + (stock.quantity || 0),
+                            0
+                        );
+                        isLowStock = stockQuantity <= (product.minStock || 0);
+                    }
+                }
+
+                const { stocks, ...productWithoutStocks } = product;
+
+                return {
+                    ...productWithoutStocks,
+                    stock: {
+                        quantity: stockQuantity,
+                        isLowStock,
+                    },
+                    totalStock: stockQuantity,
+                };
+            });
+        } else {
+            // Get products without stock information (original behavior)
+            const result = await this.productRepository.findMany({
+                skip,
+                take: limit,
+                where,
+                orderBy: orderByClause,
+            });
+
+            products = result.products;
+            total = result.total;
+        }
 
         return {
             products,

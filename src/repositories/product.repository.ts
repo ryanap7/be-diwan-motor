@@ -118,6 +118,66 @@ export class ProductRepository {
         return { products, total };
     }
 
+    async findManyWithStocks(params: {
+        skip: number;
+        take: number;
+        where: Prisma.ProductWhereInput;
+        orderBy: Prisma.ProductOrderByWithRelationInput;
+        branchId?: string;
+    }) {
+        const { skip, take, where, orderBy, branchId } = params;
+
+        const products = await prisma.product.findMany({
+            skip,
+            take,
+            where: {
+                ...where,
+                deletedAt: null,
+            },
+            orderBy,
+            include: {
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                brand: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                stocks: branchId
+                    ? {
+                          where: {
+                              branchId: branchId,
+                          },
+                          select: {
+                              quantity: true,
+                              isLowStock: true,
+                              branchId: true,
+                          },
+                      }
+                    : {
+                          select: {
+                              quantity: true,
+                              branchId: true,
+                          },
+                      },
+            },
+        });
+
+        const total = await prisma.product.count({
+            where: {
+                ...where,
+                deletedAt: null,
+            },
+        });
+
+        return { products, total };
+    }
+
     async update(id: string, data: Prisma.ProductUpdateInput) {
         return prisma.product.update({
             where: { id },

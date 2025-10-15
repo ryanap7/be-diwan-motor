@@ -290,6 +290,7 @@ export class TransactionController {
                 hasDiscount: query.priceType === 'promo' ? 'true' : undefined,
                 sortBy: 'name',
                 sortOrder: 'asc',
+                branchId: userBranchId, // Pass branchId to get stock info
             });
 
             ResponseHandler.success(
