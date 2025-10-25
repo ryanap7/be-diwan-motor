@@ -19,7 +19,7 @@ export const getTopSellingProductsSchema = z.object({
     query: z.object({
         ...reportDateRangeSchema.shape,
         branchId: z.string().uuid().optional(),
-        limit: z.coerce.number().int().positive().default(10),
+        limit: z.coerce.number().int().max(1000).positive().default(10),
     }),
 });
 
@@ -27,7 +27,7 @@ export const getSlowMovingProductsSchema = z.object({
     query: z.object({
         ...reportDateRangeSchema.shape,
         branchId: z.string().uuid().optional(),
-        limit: z.coerce.number().int().positive().default(10),
+        limit: z.coerce.number().int().max(1000).positive().default(10),
         daysThreshold: z.coerce.number().int().positive().default(30),
     }),
 });

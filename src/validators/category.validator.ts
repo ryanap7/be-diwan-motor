@@ -112,8 +112,8 @@ export const getCategoriesQuerySchema = z.object({
             .default('10')
             .transform((val) => parseInt(val, 10))
             .refine(
-                (val) => val > 0 && val <= 100,
-                'Limit must be between 1 and 100'
+                (val) => val > 0 && val <= 1000,
+                'Limit must be between 1 and 1000'
             ),
 
         search: z.string().optional(),

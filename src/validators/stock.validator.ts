@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const getStockOverviewSchema = z.object({
     query: z.object({
         page: z.coerce.number().int().positive().default(1),
-        limit: z.coerce.number().int().positive().max(100).default(10),
+        limit: z.coerce.number().int().positive().max(1000).default(10),
         search: z.string().optional(),
         branchId: z.string().uuid().optional(),
         categoryId: z.string().uuid().optional(),
@@ -60,7 +60,7 @@ export type TransferStockInput = z.infer<typeof transferStockSchema>['body'];
 export const getStockMovementsSchema = z.object({
     query: z.object({
         page: z.coerce.number().int().positive().default(1),
-        limit: z.coerce.number().int().positive().max(100).default(20),
+        limit: z.coerce.number().int().positive().max(1000).default(20),
         productId: z.string().uuid().optional(),
         branchId: z.string().uuid().optional(),
         type: z.enum(['IN', 'OUT', 'TRANSFER', 'ADJUSTMENT']).optional(),

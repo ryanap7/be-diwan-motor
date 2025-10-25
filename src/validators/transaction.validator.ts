@@ -70,7 +70,7 @@ export const getTransactionByInvoiceSchema = z.object({
 export const getTransactionsQuerySchema = z.object({
     query: z.object({
         page: z.coerce.number().int().positive().default(1),
-        limit: z.coerce.number().int().positive().max(100).default(10),
+        limit: z.coerce.number().int().positive().max(1000).default(10),
         search: z.string().optional(), // Search by invoice number
         branchId: z.string().uuid().optional(),
         cashierId: z.string().uuid().optional(),
@@ -131,7 +131,7 @@ export type QuickCreateCustomerInput = z.infer<
 export const getProductsForPOSSchema = z.object({
     query: z.object({
         page: z.coerce.number().int().positive().default(1),
-        limit: z.coerce.number().int().positive().max(100).default(20),
+        limit: z.coerce.number().int().positive().max(1000).default(20),
         search: z.string().optional(),
         categoryId: z.string().uuid().optional(),
         brandId: z.string().uuid().optional(),

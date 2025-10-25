@@ -72,7 +72,7 @@ export const updateProductSchema = z.object({
 export const getProductsQuerySchema = z.object({
     query: z.object({
         page: z.coerce.number().int().positive().optional(),
-        limit: z.coerce.number().int().positive().max(100).optional(),
+        limit: z.coerce.number().int().positive().max(1000).optional(),
         search: z.string().trim().optional(),
         categoryId: z.string().uuid().optional(),
         branchId: z.string().uuid().optional(),
