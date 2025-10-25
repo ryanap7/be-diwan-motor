@@ -293,7 +293,7 @@ export class TransactionService {
         const { transactions, total } =
             await this.transactionRepository.findMany({
                 skip,
-                take: limit,
+                take: Number(limit),
                 where,
                 orderBy: orderByClause,
             });

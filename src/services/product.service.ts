@@ -185,7 +185,7 @@ export class ProductService {
             // Get products with stock information
             const result = await this.productRepository.findManyWithStocks({
                 skip,
-                take: limit,
+                take: Number(limit),
                 where,
                 orderBy: orderByClause,
                 branchId,
@@ -231,7 +231,7 @@ export class ProductService {
             // Get products without stock information (original behavior)
             const result = await this.productRepository.findMany({
                 skip,
-                take: limit,
+                take: Number(limit),
                 where,
                 orderBy: orderByClause,
             });

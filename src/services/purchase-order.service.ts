@@ -211,7 +211,7 @@ export class PurchaseOrderService {
         const { purchaseOrders, total } =
             await this.purchaseOrderRepository.findMany({
                 skip,
-                take: limit,
+                take: Number(limit),
                 where,
                 orderBy: orderByClause,
             });

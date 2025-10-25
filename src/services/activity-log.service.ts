@@ -100,7 +100,7 @@ export class ActivityLogService {
 
         const { logs, total } = await this.activityLogRepository.findMany({
             skip,
-            take: limit,
+            take: Number(limit),
             where,
             orderBy: orderByClause,
         });

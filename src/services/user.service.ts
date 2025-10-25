@@ -85,7 +85,7 @@ export class UserService {
         // Fetch users with pagination
         const { users, total } = await this.userRepository.findMany({
             skip,
-            take: limit,
+            take: Number(limit),
             where,
             orderBy: { createdAt: 'desc' },
         });

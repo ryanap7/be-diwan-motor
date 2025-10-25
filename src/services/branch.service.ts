@@ -321,7 +321,7 @@ export class BranchService {
 
         const { branches, total } = await this.branchRepository.findMany({
             skip,
-            take: limit,
+            take: Number(limit),
             where,
             orderBy: { createdAt: 'desc' },
         });

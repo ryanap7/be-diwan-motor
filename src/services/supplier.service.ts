@@ -82,7 +82,7 @@ export class SupplierService {
         // Get suppliers
         const { suppliers, total } = await this.supplierRepository.findMany({
             skip,
-            take: limit,
+            take: Number(limit),
             where,
             orderBy: orderByClause,
         });

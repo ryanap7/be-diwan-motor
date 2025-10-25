@@ -78,7 +78,7 @@ export class CustomerService {
         // Get customers
         const { customers, total } = await this.customerRepository.findMany({
             skip,
-            take: limit,
+            take: Number(limit),
             where,
             orderBy: orderByClause,
         });

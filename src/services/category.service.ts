@@ -112,7 +112,7 @@ export class CategoryService {
         // Ambil parent categories dengan children-nya
         const { categories, total } = await this.categoryRepository.findMany({
             skip,
-            take: limit,
+            take: Number(limit),
             where,
             orderBy: orderByClause,
             include: {

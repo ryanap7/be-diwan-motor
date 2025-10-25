@@ -81,7 +81,7 @@ export class BrandService {
 
         const { brands, total } = await this.brandRepository.findMany({
             skip,
-            take: limit,
+            take: Number(limit),
             where,
             orderBy: orderByClause,
         });

@@ -62,7 +62,7 @@ export class StockService {
         const { products, total } = await this.stockRepository.getStockOverview(
             {
                 skip,
-                take: limit,
+                take: Number(limit),
                 where,
                 orderBy,
                 branchId,
@@ -236,7 +236,7 @@ export class StockService {
         const { movements, total } =
             await this.stockRepository.getStockMovements({
                 skip,
-                take: limit,
+                take: Number(limit),
                 where,
             });
 
