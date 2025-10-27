@@ -13,6 +13,7 @@ import stockRoutes from './stock.routes';
 import supplierRoutes from './supplier.routes';
 import transactionRoutes from './transaction.routes';
 import userRoutes from './user.routes';
+import dashboardRoutes from './dashboard.routes';
 
 const router = Router();
 
@@ -40,5 +41,6 @@ router.use('/activity-logs', activityLogRoutes);
 router.use('/settings', settingRoutes);
 router.use('/transactions', transactionRoutes);
 router.use('/reports', reportRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 export default router;
