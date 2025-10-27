@@ -69,6 +69,21 @@ export const updateProductSchema = z.object({
     }),
 });
 
+const booleanQueryParam = () =>
+    z
+        .union([
+            z.enum(['true', 'false']),
+            z.boolean(),
+            z.literal('1'),
+            z.literal('0'),
+        ])
+        .transform((val) => {
+            if (val === 'true' || val === true || val === '1') return true;
+            if (val === 'false' || val === false || val === '0') return false;
+            return undefined;
+        })
+        .optional();
+
 export const getProductsQuerySchema = z.object({
     query: z.object({
         page: z.coerce.number().int().positive().optional(),
@@ -77,22 +92,13 @@ export const getProductsQuerySchema = z.object({
         categoryId: z.string().uuid().optional(),
         branchId: z.string().uuid().optional(),
         brandId: z.string().uuid().optional(),
-        isActive: z
-            .enum(['true', 'false'])
-            .transform((val) => val === 'true')
-            .optional(),
-        isFeatured: z
-            .enum(['true', 'false'])
-            .transform((val) => val === 'true')
-            .optional(),
-        hasDiscount: z
-            .enum(['true', 'false'])
-            .transform((val) => val === 'true')
-            .optional(),
+        isActive: booleanQueryParam(),
+        isFeatured: booleanQueryParam(),
+        hasDiscount: booleanQueryParam(),
         minPrice: z.coerce.number().nonnegative().optional(),
         maxPrice: z.coerce.number().nonnegative().optional(),
         sortBy: z.string().default('createdAt'),
-        sortOrder: z.enum(['asc', 'desc']).optional(),
+        sortOrder: z.enum(['asc', 'desc']).default('desc'),
     }),
 });
 

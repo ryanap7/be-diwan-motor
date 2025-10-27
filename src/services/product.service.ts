@@ -95,6 +95,7 @@ export class ProductService {
             purchasePrice: data.purchasePrice,
             sellingPrice: data.sellingPrice,
             wholesalePrice: data.wholesalePrice,
+            minOrderWholesale: data.minOrderWholesale,
             minStock: data.minStock || 0,
             weight: data.weight,
             dimensions: data.dimensions as any,
@@ -122,70 +123,79 @@ export class ProductService {
             hasDiscount,
             minPrice,
             maxPrice,
-            sortBy,
-            sortOrder,
+            sortBy = 'createdAt',
+            sortOrder = 'desc',
             branchId,
         } = query;
 
         const skip = (page - 1) * limit;
 
         // Build where clause
-        const where: Prisma.ProductWhereInput = {};
+        const where: Prisma.ProductWhereInput = {
+            deletedAt: null, // IMPORTANT: Always filter soft deleted
+        };
 
         // Search by name, SKU, or compatible models
-        if (search) {
+        if (search && search.trim() !== '') {
             where.OR = [
-                { name: { contains: search, mode: 'insensitive' } },
-                { sku: { contains: search, mode: 'insensitive' } },
-                { compatibleModels: { contains: search, mode: 'insensitive' } },
+                { name: { contains: search.trim(), mode: 'insensitive' } },
+                { sku: { contains: search.trim(), mode: 'insensitive' } },
+                {
+                    compatibleModels: {
+                        contains: search.trim(),
+                        mode: 'insensitive',
+                    },
+                },
             ];
         }
 
         // Filter by category
-        if (categoryId) {
+        if (categoryId && categoryId.trim() !== '') {
             where.categoryId = categoryId;
         }
 
         // Filter by brand
-        if (brandId) {
+        if (brandId && brandId.trim() !== '') {
             where.brandId = brandId;
         }
 
-        // Filter by status - FIXED: now receives boolean
-        if (isActive !== undefined) {
-            where.isActive = isActive; // Direct assignment, already boolean
+        // Filter by status - CRITICAL: Check for explicit boolean values
+        if (typeof isActive === 'boolean') {
+            where.isActive = isActive;
         }
 
         // Filter by featured
-        if (isFeatured !== undefined) {
-            where.isFeatured = isFeatured; // Direct assignment
+        if (typeof isFeatured === 'boolean') {
+            where.isFeatured = isFeatured;
         }
 
         // Filter by discount
-        if (hasDiscount !== undefined) {
-            where.hasDiscount = hasDiscount; // Direct assignment
+        if (typeof hasDiscount === 'boolean') {
+            where.hasDiscount = hasDiscount;
         }
 
         // Filter by price range
         if (minPrice !== undefined || maxPrice !== undefined) {
             where.sellingPrice = {};
-            if (minPrice !== undefined) {
+            if (minPrice !== undefined && minPrice > 0) {
                 where.sellingPrice.gte = minPrice;
             }
-            if (maxPrice !== undefined) {
+            if (maxPrice !== undefined && maxPrice > 0) {
                 where.sellingPrice.lte = maxPrice;
             }
         }
 
-        // Build orderBy
+        // Build orderBy with fallback
         const orderByClause: Prisma.ProductOrderByWithRelationInput = {
             [sortBy]: sortOrder,
         };
 
+        console.log('Product Query Where:', JSON.stringify(where, null, 2)); // Debug log
+
         // Use different repository method based on whether we need stock info
         let products, total;
 
-        if (branchId !== undefined) {
+        if (branchId && branchId.trim() !== '') {
             // Get products with stock information
             const result = await this.productRepository.findManyWithStocks({
                 skip,
@@ -244,11 +254,13 @@ export class ProductService {
             total = result.total;
         }
 
+        console.log(`Found ${total} products`); // Debug log
+
         return {
             products,
             pagination: {
-                page,
-                limit,
+                page: Number(page),
+                limit: Number(limit),
                 total,
                 totalPages: Math.ceil(total / limit),
                 hasNextPage: page < Math.ceil(total / limit),
@@ -348,6 +360,7 @@ export class ProductService {
             purchasePrice: data.purchasePrice,
             sellingPrice: data.sellingPrice,
             wholesalePrice: data.wholesalePrice,
+            minOrderWholesale: data.minOrderWholesale,
             minStock: data.minStock,
             weight: data.weight,
             dimensions: data.dimensions as any,

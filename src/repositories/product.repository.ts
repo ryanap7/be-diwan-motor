@@ -16,6 +16,7 @@ export class ProductRepository {
         purchasePrice: true,
         sellingPrice: true,
         wholesalePrice: true,
+        minOrderWholesale: true,
         hasDiscount: true,
         discountPercent: true,
         discountPrice: true,

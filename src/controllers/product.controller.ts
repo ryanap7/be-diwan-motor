@@ -109,6 +109,20 @@ export class ProductController {
         try {
             const query = req.query;
 
+            // Helper function untuk konversi boolean yang aman
+            const parseBoolean = (value: any): boolean | undefined => {
+                if (value === undefined || value === null || value === '') {
+                    return undefined;
+                }
+                if (value === 'true' || value === true || value === '1') {
+                    return true;
+                }
+                if (value === 'false' || value === false || value === '0') {
+                    return false;
+                }
+                return undefined;
+            };
+
             const result = await this.productService.getProducts({
                 page: parseInt(query.page as string) || 1,
                 limit: parseInt(query.limit as string) || 10,
@@ -116,16 +130,16 @@ export class ProductController {
                 categoryId: query.categoryId as string,
                 brandId: query.brandId as string,
                 branchId: query.branchId as string,
-                isActive: query.isActive as boolean | undefined,
-                isFeatured: query.isFeatured as boolean | undefined,
-                hasDiscount: query.hasDiscount as boolean | undefined,
+                isActive: parseBoolean(query.isActive),
+                isFeatured: parseBoolean(query.isFeatured),
+                hasDiscount: parseBoolean(query.hasDiscount),
                 minPrice: query.minPrice
                     ? parseFloat(query.minPrice as string)
                     : undefined,
                 maxPrice: query.maxPrice
                     ? parseFloat(query.maxPrice as string)
                     : undefined,
-                sortBy: (query.sortBy as any) || 'createdAt',
+                sortBy: (query.sortBy as string) || 'createdAt',
                 sortOrder: (query.sortOrder as 'asc' | 'desc') || 'desc',
             });
 
