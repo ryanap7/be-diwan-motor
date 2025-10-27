@@ -77,16 +77,24 @@ export const getProductsQuerySchema = z.object({
         categoryId: z.string().uuid().optional(),
         branchId: z.string().uuid().optional(),
         brandId: z.string().uuid().optional(),
-        isActive: z.enum(['true', 'false']).optional(),
-        isFeatured: z.enum(['true', 'false']).optional(),
-        hasDiscount: z.enum(['true', 'false']).optional(),
+        isActive: z
+            .enum(['true', 'false'])
+            .transform((val) => val === 'true')
+            .optional(),
+        isFeatured: z
+            .enum(['true', 'false'])
+            .transform((val) => val === 'true')
+            .optional(),
+        hasDiscount: z
+            .enum(['true', 'false'])
+            .transform((val) => val === 'true')
+            .optional(),
         minPrice: z.coerce.number().nonnegative().optional(),
         maxPrice: z.coerce.number().nonnegative().optional(),
         sortBy: z.string().default('createdAt'),
         sortOrder: z.enum(['asc', 'desc']).optional(),
     }),
 });
-
 export const getProductByIdSchema = z.object({
     params: z.object({
         id: z.string().uuid('Invalid product ID'),

@@ -124,7 +124,7 @@ export class ProductService {
             maxPrice,
             sortBy,
             sortOrder,
-            branchId, // Add this parameter
+            branchId,
         } = query;
 
         const skip = (page - 1) * limit;
@@ -151,28 +151,28 @@ export class ProductService {
             where.brandId = brandId;
         }
 
-        // Filter by status
+        // Filter by status - FIXED: now receives boolean
         if (isActive !== undefined) {
-            where.isActive = isActive === 'true';
+            where.isActive = isActive; // Direct assignment, already boolean
         }
 
         // Filter by featured
         if (isFeatured !== undefined) {
-            where.isFeatured = isFeatured === 'true';
+            where.isFeatured = isFeatured; // Direct assignment
         }
 
         // Filter by discount
         if (hasDiscount !== undefined) {
-            where.hasDiscount = hasDiscount === 'true';
+            where.hasDiscount = hasDiscount; // Direct assignment
         }
 
         // Filter by price range
         if (minPrice !== undefined || maxPrice !== undefined) {
             where.sellingPrice = {};
-            if (minPrice) {
+            if (minPrice !== undefined) {
                 where.sellingPrice.gte = minPrice;
             }
-            if (maxPrice) {
+            if (maxPrice !== undefined) {
                 where.sellingPrice.lte = maxPrice;
             }
         }
