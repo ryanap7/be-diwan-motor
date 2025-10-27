@@ -286,8 +286,8 @@ export class TransactionController {
                 search: query.search as string,
                 categoryId: query.categoryId as string,
                 brandId: query.brandId as string,
-                isActive: 'true', // Only active products
-                hasDiscount: query.priceType === 'promo' ? 'true' : undefined,
+                isActive: true,
+                hasDiscount: query.priceType === 'promo' ? true : undefined,
                 sortBy: 'name',
                 sortOrder: 'asc',
                 branchId: userBranchId, // Pass branchId to get stock info
