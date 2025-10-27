@@ -15,12 +15,16 @@ export class CategoryService {
     }
 
     private generateSlug(name: string): string {
-        return name
+        const baseSlug = name
             .toLowerCase()
             .trim()
-            .replace(/[^\w\s-]/g, '') // Remove special chars
-            .replace(/\s+/g, '-') // Replace spaces with -
-            .replace(/-+/g, '-'); // Replace multiple - with single -
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+
+        const timestamp = Date.now();
+
+        return `${baseSlug}-${timestamp}`;
     }
 
     async createCategory(data: CreateCategoryInput) {

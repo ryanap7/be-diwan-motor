@@ -18,12 +18,16 @@ export class ProductService {
     }
 
     private generateSlug(name: string): string {
-        return name
+        const baseSlug = name
             .toLowerCase()
             .trim()
             .replace(/[^\w\s-]/g, '')
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-');
+
+        const timestamp = Date.now();
+
+        return `${baseSlug}-${timestamp}`;
     }
 
     private calculateDiscountPrice(
