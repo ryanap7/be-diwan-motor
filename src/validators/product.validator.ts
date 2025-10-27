@@ -95,6 +95,7 @@ export const getProductsQuerySchema = z.object({
         sortOrder: z.enum(['asc', 'desc']).optional(),
     }),
 });
+
 export const getProductByIdSchema = z.object({
     params: z.object({
         id: z.string().uuid('Invalid product ID'),

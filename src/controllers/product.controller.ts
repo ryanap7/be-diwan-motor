@@ -116,24 +116,9 @@ export class ProductController {
                 categoryId: query.categoryId as string,
                 brandId: query.brandId as string,
                 branchId: query.branchId as string,
-                isActive:
-                    query.isActive === 'true'
-                        ? true
-                        : query.isActive === 'false'
-                          ? false
-                          : undefined,
-                isFeatured:
-                    query.isFeatured === 'true'
-                        ? true
-                        : query.isFeatured === 'false'
-                          ? false
-                          : undefined,
-                hasDiscount:
-                    query.hasDiscount === 'true'
-                        ? true
-                        : query.hasDiscount === 'false'
-                          ? false
-                          : undefined,
+                isActive: query.isActive as boolean | undefined,
+                isFeatured: query.isFeatured as boolean | undefined,
+                hasDiscount: query.hasDiscount as boolean | undefined,
                 minPrice: query.minPrice
                     ? parseFloat(query.minPrice as string)
                     : undefined,
