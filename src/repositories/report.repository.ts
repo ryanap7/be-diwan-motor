@@ -265,9 +265,13 @@ export class ReportRepository {
     }
 
     // ===== INVENTORY REPORTS =====
-
     async getInventoryReportSummary(query: GetInventoryReportQuery) {
-        const where: Prisma.StockWhereInput = {};
+        const where: Prisma.StockWhereInput = {
+            product: {
+                deletedAt: null,
+                isActive: true,
+            },
+        };
         if (query.branchId) where.branchId = query.branchId;
 
         const [totalItems, lowStockCount, allStocks] = await Promise.all([
@@ -289,24 +293,29 @@ export class ReportRepository {
                     quantity: true,
                     product: {
                         select: {
-                            sellingPrice: true,
+                            purchasePrice: true,
                         },
                     },
                 },
             }),
         ]);
 
-        // Calculate total stock value
+        // Calculate total stock value using purchase price
         const totalStockValue = allStocks.reduce((sum, stock) => {
-            const value = stock.quantity * Number(stock.product.sellingPrice);
+            const value = stock.quantity * Number(stock.product.purchasePrice);
             return sum + value;
         }, 0);
 
         return {
-            totalStockValue,
+            totalStockValue: Math.round(totalStockValue),
             totalItems: totalItems._sum.quantity || 0,
             lowStockCount,
-            uniqueProducts: await prisma.stock.count({ where }),
+            uniqueProducts: await prisma.stock
+                .findMany({
+                    where,
+                    distinct: ['productId'],
+                })
+                .then((stocks) => stocks.length),
         };
     }
 
