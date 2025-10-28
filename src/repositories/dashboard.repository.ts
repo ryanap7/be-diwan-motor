@@ -59,42 +59,53 @@ export class DashboardRepository {
     async getInventoryStats(params: { branchId?: string }) {
         const { branchId } = params;
 
-        // Total active products
-        const totalProducts = await prisma.product.count({
-            where: {
+        const stockWhere: Prisma.StockWhereInput = {
+            product: {
                 deletedAt: null,
                 isActive: true,
             },
-        });
-
-        // Low stock count and total stock value
-        const stockWhere: Prisma.StockWhereInput = {};
+        };
         if (branchId) stockWhere.branchId = branchId;
 
-        const [lowStockCount, stockData] = await Promise.all([
-            // Count products with low stock
+        const [totalProducts, lowStockCount, stockData] = await Promise.all([
+            prisma.stock
+                .findMany({
+                    where: stockWhere,
+                    distinct: ['productId'],
+                })
+                .then((stocks) => stocks.length),
+
             prisma.stock.count({
                 where: {
                     ...stockWhere,
                     isLowStock: true,
                 },
             }),
-            // Get all stocks to calculate total value
+
             prisma.stock.findMany({
                 where: stockWhere,
                 include: {
                     product: {
                         select: {
+                            id: true,
+                            name: true,
                             purchasePrice: true,
+                        },
+                    },
+                    branch: {
+                        select: {
+                            name: true,
                         },
                     },
                 },
             }),
         ]);
 
-        // Calculate total asset inventory value
         const totalStockValue = stockData.reduce((total, stock) => {
-            const value = Number(stock.product.purchasePrice) * stock.quantity;
+            const price = Number(stock.product.purchasePrice);
+            const qty = stock.quantity;
+            const value = price * qty;
+
             return total + value;
         }, 0);
 

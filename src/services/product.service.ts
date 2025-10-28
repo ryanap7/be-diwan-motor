@@ -190,8 +190,6 @@ export class ProductService {
             [sortBy]: sortOrder,
         };
 
-        console.log('Product Query Where:', JSON.stringify(where, null, 2)); // Debug log
-
         // Use different repository method based on whether we need stock info
         let products, total;
 
@@ -253,8 +251,6 @@ export class ProductService {
             products = result.products;
             total = result.total;
         }
-
-        console.log(`Found ${total} products`); // Debug log
 
         return {
             products,
