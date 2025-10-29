@@ -84,13 +84,13 @@ export class CategoryService {
             limit = 10,
             search,
             isActive,
-            sortBy,
-            sortOrder,
+            sortBy = 'name', // Default ke 'name'
+            sortOrder = 'asc', // Default ke 'asc' untuk A-Z
         } = query;
 
         const skip = (page - 1) * limit;
 
-        // Build where clause - hanya ambil parent categories (yang tidak punya parent)
+        // Build where clause
         const where: Prisma.CategoryWhereInput = {
             parentId: null,
         };

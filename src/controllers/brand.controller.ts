@@ -47,12 +47,10 @@ export class BrandController {
             const validSortBy = ['name', 'createdAt'] as const;
             const parsedSortBy = validSortBy.includes(sortBy as any)
                 ? (sortBy as 'name' | 'createdAt')
-                : 'createdAt';
+                : 'name';
 
             const parsedSortOrder =
-                sortOrder === 'asc' || sortOrder === 'desc'
-                    ? sortOrder
-                    : 'desc';
+                sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : 'asc';
 
             if (sortBy && !validSortBy.includes(sortBy as any)) {
                 throw new Error('Invalid sortBy parameter');

@@ -139,8 +139,8 @@ export class ProductController {
                 maxPrice: query.maxPrice
                     ? parseFloat(query.maxPrice as string)
                     : undefined,
-                sortBy: (query.sortBy as string) || 'createdAt',
-                sortOrder: (query.sortOrder as 'asc' | 'desc') || 'desc',
+                sortBy: (query.sortBy as string) || 'name',
+                sortOrder: (query.sortOrder as 'asc' | 'desc') || 'asc',
             });
 
             ResponseHandler.success(

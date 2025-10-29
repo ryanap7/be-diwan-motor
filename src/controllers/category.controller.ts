@@ -47,7 +47,7 @@ export class CategoryController {
             const validSortBy = ['name', 'createdAt', 'sortOrder'] as const;
             const parsedSortBy = validSortBy.includes(sortBy as any)
                 ? (sortBy as 'name' | 'createdAt' | 'sortOrder')
-                : 'createdAt';
+                : 'name';
 
             // Validasi sortOrder
             const parsedSortOrder =

@@ -56,8 +56,8 @@ export class BrandService {
             limit = 10,
             search,
             isActive,
-            sortBy,
-            sortOrder,
+            sortBy = 'name',
+            sortOrder = 'asc',
         } = query;
 
         const skip = (page - 1) * limit;

@@ -123,8 +123,8 @@ export class ProductService {
             hasDiscount,
             minPrice,
             maxPrice,
-            sortBy = 'createdAt',
-            sortOrder = 'desc',
+            sortBy = 'name',
+            sortOrder = 'asc',
             branchId,
         } = query;
 
