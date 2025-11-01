@@ -62,7 +62,6 @@ export class DashboardRepository {
         const stockWhere: Prisma.StockWhereInput = {
             product: {
                 deletedAt: null,
-                isActive: true,
             },
         };
         if (branchId) stockWhere.branchId = branchId;
