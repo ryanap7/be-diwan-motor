@@ -66,13 +66,14 @@ export class DashboardRepository {
         };
         if (branchId) stockWhere.branchId = branchId;
 
+        const productWhere: Prisma.ProductWhereInput = {
+            deletedAt: null,
+        };
+
         const [totalProducts, lowStockCount, stockData] = await Promise.all([
-            prisma.stock
-                .findMany({
-                    where: stockWhere,
-                    distinct: ['productId'],
-                })
-                .then((stocks) => stocks.length),
+            prisma.product.count({
+                where: productWhere,
+            }),
 
             prisma.stock.count({
                 where: {
